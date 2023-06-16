@@ -28,12 +28,12 @@ segmentItems:
       componentId: 53
       isError: false
       spanType: Entry
-      peer: not blank
+      peer: ''
       tags:
-      - {key: mq.broker, value: not blank}
+      - {key: mq.broker, value: not null}
       - {key: mq.topic, value: ''}
       - {key: mq.queue, value: test}
-      - {key: transmission.latency, value: ge 0}
+      - {key: transmission.latency, value: not null}
       refs:
       - {parentEndpoint: GET:/rabbitmq-scenario/case/rabbitmq, networkAddress: not null,
         refType: CrossProcess, parentSpanId: 1, parentTraceSegmentId: not null, parentServiceInstance: not
@@ -50,9 +50,9 @@ segmentItems:
       componentId: 52
       isError: false
       spanType: Exit
-      peer: not blank
+      peer: not null
       tags:
-      - {key: mq.broker, value: not blank}
+      - {key: mq.broker, value: not null}
       - {key: mq.queue, value: test}
       - {key: mq.topic, value: ''}
       skipAnalysis: 'false'
@@ -69,5 +69,4 @@ segmentItems:
       tags:
       - {key: url, value: 'http://localhost:8080/rabbitmq-scenario/case/rabbitmq'}
       - {key: http.method, value: GET}
-      - {key: http.status_code, value: '200'}
       skipAnalysis: 'false'

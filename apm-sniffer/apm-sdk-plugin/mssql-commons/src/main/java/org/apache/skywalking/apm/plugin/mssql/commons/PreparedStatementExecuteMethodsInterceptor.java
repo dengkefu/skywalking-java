@@ -18,6 +18,7 @@
 
 package org.apache.skywalking.apm.plugin.mssql.commons;
 
+import java.lang.reflect.Method;
 import org.apache.skywalking.apm.agent.core.context.ContextManager;
 import org.apache.skywalking.apm.agent.core.context.tag.Tags;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractSpan;
@@ -30,8 +31,6 @@ import org.apache.skywalking.apm.plugin.jdbc.PreparedStatementParameterBuilder;
 import org.apache.skywalking.apm.plugin.jdbc.SqlBodyUtil;
 import org.apache.skywalking.apm.plugin.jdbc.define.StatementEnhanceInfos;
 import org.apache.skywalking.apm.plugin.jdbc.trace.ConnectionInfo;
-
-import java.lang.reflect.Method;
 
 public class PreparedStatementExecuteMethodsInterceptor implements InstanceMethodsAroundInterceptor {
 
@@ -46,7 +45,7 @@ public class PreparedStatementExecuteMethodsInterceptor implements InstanceMetho
             AbstractSpan span = ContextManager.createExitSpan(
                 buildOperationName(connectInfo, method.getName(), cacheObject
                     .getStatementName()), connectInfo.getDatabasePeer());
-            Tags.DB_TYPE.set(span, connectInfo.getDBType());
+            Tags.DB_TYPE.set(span, "sql");
             Tags.DB_INSTANCE.set(span, connectInfo.getDatabaseName());
             Tags.DB_STATEMENT.set(span, SqlBodyUtil.limitSqlBodySize(cacheObject.getSql()));
             span.setComponent(connectInfo.getComponent());
@@ -54,7 +53,7 @@ public class PreparedStatementExecuteMethodsInterceptor implements InstanceMetho
                 final Object[] parameters = cacheObject.getParameters();
                 if (parameters != null && parameters.length > 0) {
                     int maxIndex = cacheObject.getMaxIndex();
-                    Tags.SQL_PARAMETERS.set(span, getParameterString(parameters, maxIndex));
+                    Constants.SQL_PARAMETERS.set(span, getParameterString(parameters, maxIndex));
                 }
             }
             SpanLayer.asDB(span);
@@ -81,13 +80,13 @@ public class PreparedStatementExecuteMethodsInterceptor implements InstanceMetho
     }
 
     private String buildOperationName(ConnectionInfo connectionInfo, String methodName, String statementName) {
-        return connectionInfo.getDBType() + "/JDBC/" + statementName + "/" + methodName;
+        return connectionInfo.getDBType() + "/JDBI/" + statementName + "/" + methodName;
     }
-
+    
     private String getParameterString(Object[] parameters, int maxIndex) {
         return new PreparedStatementParameterBuilder()
-            .setParameters(parameters)
-            .setMaxIndex(maxIndex)
-            .build();
+                .setParameters(parameters)
+                .setMaxIndex(maxIndex)
+                .build();
     }
 }

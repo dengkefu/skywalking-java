@@ -18,7 +18,7 @@
 
 package org.apache.skywalking.apm.plugin.solrj;
 
-import static org.mockito.Mockito.when;
+import com.google.common.collect.Lists;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractSpan;
@@ -53,11 +53,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import com.google.common.collect.Lists;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
-@RunWith(TracingSegmentRunner.class)
+import static org.mockito.Mockito.when;
+
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
 public class SolrClientInterceptorTest {
     SolrClientInterceptor interceptor = new SolrClientInterceptor();
 
@@ -66,8 +68,6 @@ public class SolrClientInterceptorTest {
 
     @Rule
     public AgentServiceRule serviceRule = new AgentServiceRule();
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     @Mock
     private HttpSolrClient client;

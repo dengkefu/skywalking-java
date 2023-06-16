@@ -64,10 +64,6 @@ public class GraphqlInstrumentation extends ClassInstanceMethodsEnhancePluginDef
 
     @Override
     protected String[] witnessClasses() {
-        return new String[] {
-                "graphql.util.SimpleTraverserContext",
-                "graphql.analysis.FieldVisitor",
-                "graphql.execution.ExecutionPath"
-        };
+        return new String[] {"graphql.util.SimpleTraverserContext", "graphql.analysis.FieldVisitor"};
     }
 }

@@ -48,7 +48,6 @@ segmentItems:
             tags:
               - {key: url, value: 'http://localhost:8080/asynchttpclient/case'}
               - {key: http.method, value: GET}
-              - {key: http.status_code, value: '200'}
       - segmentId: not null
         spans:
           - operationName: GET:/asynchttpclient/back
@@ -65,7 +64,6 @@ segmentItems:
             tags:
               - {key: url, value: 'http://localhost:8080/asynchttpclient/back'}
               - {key: http.method, value: GET}
-              - {key: http.status_code, value: '200'}
             refs:
               - {parentEndpoint: GET:/asynchttpclient/case, networkAddress: 'localhost:8080',
                  refType: CrossProcess, parentSpanId: 1, parentTraceSegmentId: not null, parentServiceInstance: not null,

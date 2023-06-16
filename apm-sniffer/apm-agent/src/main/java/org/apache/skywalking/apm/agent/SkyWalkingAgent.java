@@ -19,10 +19,10 @@
 package org.apache.skywalking.apm.agent;
 
 import java.lang.instrument.Instrumentation;
-import java.security.ProtectionDomain;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.NamedElement;
@@ -69,16 +69,11 @@ public class SkyWalkingAgent {
         } catch (Exception e) {
             // try to resolve a new logger, and use the new logger to write the error log here
             LogManager.getLogger(SkyWalkingAgent.class)
-                      .error(e, "SkyWalking agent initialized failure. Shutting down.");
+                    .error(e, "SkyWalking agent initialized failure. Shutting down.");
             return;
         } finally {
             // refresh logger again after initialization finishes
             LOGGER = LogManager.getLogger(SkyWalkingAgent.class);
-        }
-
-        if (!Config.Agent.ENABLE) {
-            LOGGER.warn("SkyWalking agent is disabled.");
-            return;
         }
 
         try {
@@ -94,15 +89,15 @@ public class SkyWalkingAgent {
         final ByteBuddy byteBuddy = new ByteBuddy().with(TypeValidation.of(Config.Agent.IS_OPEN_DEBUGGING_CLASS));
 
         AgentBuilder agentBuilder = new AgentBuilder.Default(byteBuddy).ignore(
-            nameStartsWith("net.bytebuddy.")
-                .or(nameStartsWith("org.slf4j."))
-                .or(nameStartsWith("org.groovy."))
-                .or(nameContains("javassist"))
-                .or(nameContains(".asm."))
-                .or(nameContains(".reflectasm."))
-                .or(nameStartsWith("sun.reflect"))
-                .or(allSkyWalkingAgentExcludeToolkit())
-                .or(ElementMatchers.isSynthetic()));
+                nameStartsWith("net.bytebuddy.")
+                        .or(nameStartsWith("org.slf4j."))
+                        .or(nameStartsWith("org.groovy."))
+                        .or(nameContains("javassist"))
+                        .or(nameContains(".asm."))
+                        .or(nameContains(".reflectasm."))
+                        .or(nameStartsWith("sun.reflect"))
+                        .or(allSkyWalkingAgentExcludeToolkit())
+                        .or(ElementMatchers.isSynthetic()));
 
         JDK9ModuleExporter.EdgeClasses edgeClasses = new JDK9ModuleExporter.EdgeClasses();
         try {
@@ -135,8 +130,6 @@ public class SkyWalkingAgent {
                     .with(new Listener())
                     .installOn(instrumentation);
 
-        PluginFinder.pluginInitCompleted();
-
         try {
             ServiceManager.INSTANCE.boot();
         } catch (Exception e) {
@@ -144,7 +137,7 @@ public class SkyWalkingAgent {
         }
 
         Runtime.getRuntime()
-               .addShutdownHook(new Thread(ServiceManager.INSTANCE::shutdown, "skywalking service shutdown thread"));
+                .addShutdownHook(new Thread(ServiceManager.INSTANCE::shutdown, "skywalking service shutdown thread"));
     }
 
     private static class Transformer implements AgentBuilder.Transformer {
@@ -158,8 +151,7 @@ public class SkyWalkingAgent {
         public DynamicType.Builder<?> transform(final DynamicType.Builder<?> builder,
                                                 final TypeDescription typeDescription,
                                                 final ClassLoader classLoader,
-                                                final JavaModule javaModule,
-                                                final ProtectionDomain protectionDomain) {
+                                                final JavaModule module) {
             LoadedLibraryCollector.registerURLClassLoader(classLoader);
             List<AbstractClassEnhancePluginDefine> pluginDefines = pluginFinder.find(typeDescription);
             if (pluginDefines.size() > 0) {
@@ -167,7 +159,7 @@ public class SkyWalkingAgent {
                 EnhanceContext context = new EnhanceContext();
                 for (AbstractClassEnhancePluginDefine define : pluginDefines) {
                     DynamicType.Builder<?> possibleNewBuilder = define.define(
-                        typeDescription, newBuilder, classLoader, context);
+                            typeDescription, newBuilder, classLoader, context);
                     if (possibleNewBuilder != null) {
                         newBuilder = possibleNewBuilder;
                     }
@@ -237,10 +229,7 @@ public class SkyWalkingAgent {
         }
 
         @Override
-        public Iterable<? extends List<Class<?>>> onError(int index,
-                                                          List<Class<?>> batch,
-                                                          Throwable throwable,
-                                                          List<Class<?>> types) {
+        public Iterable<? extends List<Class<?>>> onError(int index, List<Class<?>> batch, Throwable throwable, List<Class<?>> types) {
             LOGGER.error(throwable, "index={}, batch={}, types={}", index, batch, types);
             return Collections.emptyList();
         }

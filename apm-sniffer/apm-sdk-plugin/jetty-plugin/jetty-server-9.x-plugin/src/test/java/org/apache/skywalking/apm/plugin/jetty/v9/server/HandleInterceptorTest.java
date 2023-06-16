@@ -18,10 +18,6 @@
 
 package org.apache.skywalking.apm.plugin.jetty.v9.server;
 
-import static org.apache.skywalking.apm.agent.test.tools.SpanAssert.assertComponent;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.when;
 import java.util.List;
 import org.apache.skywalking.apm.agent.core.context.SW8CarrierItem;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractTracingSpan;
@@ -53,10 +49,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
-@RunWith(TracingSegmentRunner.class)
+import static org.apache.skywalking.apm.agent.test.tools.SpanAssert.assertComponent;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.when;
+
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
 public class HandleInterceptorTest {
 
     private HandleInterceptor jettyInvokeInterceptor;
@@ -65,8 +67,6 @@ public class HandleInterceptorTest {
 
     @Rule
     public AgentServiceRule serviceRule = new AgentServiceRule();
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     @Mock
     private Request request;

@@ -72,9 +72,4 @@ public class HttpClientRequestImplHandleResponseInstrumentation extends ClassIns
     protected ClassMatch enhanceClass() {
         return NameMatch.byName(ENHANCE_CLASS);
     }
-
-    @Override
-    protected String[] witnessClasses() {
-        return new String[] {"io.vertx.core.http.impl.WebSocketFrameFactoryImpl"};
-    }
 }

@@ -40,7 +40,7 @@ public class ThreadProfiler {
     private long profilingMaxTimeMills;
 
     // after min duration threshold check, it will start dump
-    private final ProfileStatusContext profilingStatus;
+    private final ProfileStatusReference profilingStatus;
     // thread dump sequence
     private int dumpSequence = 0;
 
@@ -51,10 +51,10 @@ public class ThreadProfiler {
         this.profilingThread = profilingThread;
         this.executionContext = executionContext;
         if (tracingContext.profileStatus() == null) {
-            this.profilingStatus = ProfileStatusContext.createWithPending(tracingContext().createTime());
+            this.profilingStatus = ProfileStatusReference.createWithPending();
         } else {
             this.profilingStatus = tracingContext.profileStatus();
-            this.profilingStatus.updateStatus(ProfileStatus.PENDING, tracingContext);
+            this.profilingStatus.updateStatus(ProfileStatus.PENDING);
         }
         this.profilingMaxTimeMills = TimeUnit.MINUTES.toMillis(Config.Profile.MAX_DURATION);
     }
@@ -63,10 +63,10 @@ public class ThreadProfiler {
      * If tracing start time greater than {@link ProfileTask#getMinDurationThreshold()}, then start to profiling trace
      */
     public void startProfilingIfNeed() {
-        if (System.currentTimeMillis() - profilingStatus.firstSegmentCreateTime() > executionContext.getTask()
+        if (System.currentTimeMillis() - tracingContext.createTime() > executionContext.getTask()
                                                                                        .getMinDurationThreshold()) {
             this.profilingStartTime = System.currentTimeMillis();
-            this.profilingStatus.updateStatus(ProfileStatus.PROFILING, tracingContext);
+            this.tracingContext.profileStatus().updateStatus(ProfileStatus.PROFILING);
         }
     }
 
@@ -74,7 +74,7 @@ public class ThreadProfiler {
      * Stop profiling status
      */
     public void stopProfiling() {
-        this.profilingStatus.updateStatus(ProfileStatus.STOPPED, tracingContext);
+        this.tracingContext.profileStatus().updateStatus(ProfileStatus.STOPPED);
     }
 
     /**
@@ -103,7 +103,7 @@ public class ThreadProfiler {
         }
 
         // if is first dump, check is can start profiling
-        if (dumpSequence == 0 && !executionContext.isStartProfileable()) {
+        if (dumpSequence == 0 && (!executionContext.isStartProfileable())) {
             return null;
         }
 
@@ -133,7 +133,7 @@ public class ThreadProfiler {
      */
     public boolean matches(TracingContext context) {
         // match trace id
-        return Objects.equal(context.getSegmentId(), tracingContext.getSegmentId());
+        return Objects.equal(context.getReadablePrimaryTraceId(), tracingContext.getReadablePrimaryTraceId());
     }
 
     /**
@@ -149,7 +149,7 @@ public class ThreadProfiler {
         return tracingContext;
     }
 
-    public ProfileStatusContext profilingStatus() {
+    public ProfileStatusReference profilingStatus() {
         return profilingStatus;
     }
 

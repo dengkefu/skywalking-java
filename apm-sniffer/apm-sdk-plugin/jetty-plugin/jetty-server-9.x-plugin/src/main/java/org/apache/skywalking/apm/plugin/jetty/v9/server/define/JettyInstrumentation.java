@@ -22,6 +22,7 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.ConstructorInterceptPoint;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.InstanceMethodsInterceptPoint;
+import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.ClassInstanceMethodsEnhancePluginDefine;
 import org.apache.skywalking.apm.agent.core.plugin.match.ClassMatch;
 import org.apache.skywalking.apm.agent.core.plugin.match.NameMatch;
 
@@ -31,7 +32,7 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
  * {@link JettyInstrumentation} enhance the <code>handle</code> method in <code>org.eclipse.jetty.server.handler.HandlerList</code>
  * by <code>HandleInterceptor</code>
  */
-public class JettyInstrumentation extends AbstractWitnessInstrumentation {
+public class JettyInstrumentation extends ClassInstanceMethodsEnhancePluginDefine {
 
     private static final String ENHANCE_CLASS = "org.eclipse.jetty.server.HttpChannel";
     private static final String ENHANCE_METHOD = "handle";
@@ -44,23 +45,23 @@ public class JettyInstrumentation extends AbstractWitnessInstrumentation {
 
     @Override
     public InstanceMethodsInterceptPoint[] getInstanceMethodsInterceptPoints() {
-        return new InstanceMethodsInterceptPoint[]{
-                new InstanceMethodsInterceptPoint() {
-                    @Override
-                    public ElementMatcher<MethodDescription> getMethodsMatcher() {
-                        return named(ENHANCE_METHOD);
-                    }
-
-                    @Override
-                    public String getMethodsInterceptor() {
-                        return INTERCEPTOR_CLASS;
-                    }
-
-                    @Override
-                    public boolean isOverrideArgs() {
-                        return false;
-                    }
+        return new InstanceMethodsInterceptPoint[] {
+            new InstanceMethodsInterceptPoint() {
+                @Override
+                public ElementMatcher<MethodDescription> getMethodsMatcher() {
+                    return named(ENHANCE_METHOD);
                 }
+
+                @Override
+                public String getMethodsInterceptor() {
+                    return INTERCEPTOR_CLASS;
+                }
+
+                @Override
+                public boolean isOverrideArgs() {
+                    return false;
+                }
+            }
         };
     }
 

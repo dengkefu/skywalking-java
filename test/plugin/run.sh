@@ -30,10 +30,8 @@ jacoco_home="${home}"/../jacoco
 scenarios_home="${home}/scenarios"
 num_of_testcases=
 
-container_image_version="1.0.0"
-base_image_java="eclipse-temurin:8-jdk"
-base_image_tomcat="tomcat:8.5-jdk8-openjdk"
-jacoco_version="${JACOCO_VERSION:-0.8.8}"
+image_version="jdk8-1.0.0"
+jacoco_version="${JACOCO_VERSION:-0.8.6}"
 
 os="$(uname)"
 
@@ -42,9 +40,6 @@ print_help() {
     echo -e "\t-f, --force_build \t\t do force to build Plugin-Test tools and images"
     echo -e "\t--cleanup, \t\t\t remove the related images and directories"
     echo -e "\t--debug, \t\t\t to save the log files and actualData.yaml"
-    echo -e "\t--container_image_version, \t specify the container docker image version. default 1.0.0"
-    echo -e "\t--base_image_java, \t\t specify the base java image name. the default is \"adoptopenjdk/openjdk8:alpine\""
-    echo -e "\t--base_image_tomcat, \t\t specify the base tomcat image name. the default is \"tomcat:8.5-jdk8-openjdk\""
 }
 
 parse_commandline() {
@@ -61,26 +56,12 @@ parse_commandline() {
             --debug)
                 debug_mode="on";
                 ;;
-            --container_image_version)
-                container_image_version="$2"
+            --image_version)
+                image_version="$2"
                 shift
                 ;;
-            --container_image_version=*)
-                container_image_version="${_key##--container_image_version=}"
-                ;;
-            --base_image_java)
-                base_image_java="$2"
-                shift
-                ;;
-            --base_image_java=*)
-                base_image_java="${_key##--base_image_java=}"
-                ;;
-            --base_image_tomcat)
-                base_image_tomcat="$2"
-                shift
-                ;;
-            --base_image_tomcat=*)
-                base_image_tomcat="${_key##--base_image_tomcat=}"
+            --image_version=*)
+                image_version="${_key##--image_version=}"
                 ;;
             -h|--help)
                 print_help
@@ -148,14 +129,6 @@ agent_home_selector() {
     _agent_home=${target_agent_home}
 }
 
-remove_dir() {
-    dir=$1
-    if [[ "${os}" == "Darwin" ]]; then
-        find ${dir} -type d -exec chmod -a "$(whoami) deny delete" {} \;
-    fi
-    rm -rf $dir
-}
-
 start_stamp=`date +%s`
 parse_commandline "$@"
 
@@ -168,7 +141,7 @@ test -z "$scenario_name" && exitWithMessage "Missing value for the scenario argu
 
 if [[ ! -d ${agent_home} ]]; then
     echo "[WARN] SkyWalking Agent not exists"
-    ${mvnw} -q --batch-mode -f ${home}/../../pom.xml -Pagent -DskipTests clean package
+    ${mvnw} --batch-mode -f ${home}/../../pom.xml -Pagent -DskipTests clean package
 fi
 # if it fails last time, relevant information will be deleted
 
@@ -184,13 +157,8 @@ sed -i '' '/<\/sourceDirectories>/i\'$'\n''<sourceDirectory>scenarios\/'"$scenar
 sed -i '/<\/sourceDirectories>/i <sourceDirectory>scenarios\/'"$scenario_name"'<\/sourceDirectory>' ./pom.xml
 
 if [[ "$force_build" == "on" ]]; then
-    ${mvnw} -q --batch-mode \
-      -f ${home}/pom.xml \
-      -DskipTests \
-      -Dbase_image_java=${base_image_java} \
-      -Dbase_image_tomcat=${base_image_tomcat} \
-      -Dcontainer_image_version=${container_image_version} \
-      clean package
+    profile=$(echo ${image_version} | grep -oE "jdk[0-9]+")
+    ${mvnw} --batch-mode -f ${home}/pom.xml clean package -DskipTests -P${profile}
 fi
 # remove scenario_name into plugin/pom.xml
 sed -i '' '/<sourceDirectory>scenarios\/'"$scenario_name"'<\/sourceDirectory>/d' ./pom.xml \
@@ -243,7 +211,7 @@ do
     cp ./config/expectedData.yaml ${case_work_base}/data
 
     # echo "build ${testcase_name}"
-    ${mvnw} -q --batch-mode clean package -Dtest.framework.version=${version} && \
+    ${mvnw} --batch-mode clean package -Dtest.framework.version=${version} && \
         mv ./target/${scenario_name}.* ${case_work_base}
 
     java -jar \
@@ -256,7 +224,7 @@ do
         -Dagent.dir=${_agent_home} \
         -Djacoco.home=${jacoco_home} \
         -Ddebug.mode=${debug_mode} \
-        -Ddocker.image.version=${container_image_version} \
+        -Ddocker.image.version=${image_version} \
         ${plugin_runner_helper} 1>${case_work_logs_dir}/helper.log
 
     [[ $? -ne 0 ]] && exitWithMessage "${testcase_name}, generate script failure!"
@@ -265,7 +233,7 @@ do
     bash ${case_work_base}/scenario.sh $debug_mode 1>${case_work_logs_dir}/${testcase_name}.log
     status=$?
     if [[ $status == 0 ]]; then
-        [[ -z $debug_mode ]] && remove_dir ${case_work_base}
+        [[ -z $debug_mode ]] && rm -rf ${case_work_base}
     else
         exitWithMessage "Testcase ${testcase_name} failed!"
     fi

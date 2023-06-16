@@ -18,17 +18,12 @@
 
 package org.apache.skywalking.apm.plugin.dubbo;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
-import java.util.List;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
+import java.util.List;
 import org.apache.skywalking.apm.agent.core.boot.ServiceManager;
 import org.apache.skywalking.apm.agent.core.conf.Config;
 import org.apache.skywalking.apm.agent.core.context.ContextManagerExtendService;
@@ -50,20 +45,26 @@ import org.apache.skywalking.apm.agent.test.tools.SegmentStoragePoint;
 import org.apache.skywalking.apm.agent.test.tools.TracingSegmentRunner;
 import org.apache.skywalking.apm.plugin.asf.dubbo.DubboInterceptor;
 import org.hamcrest.CoreMatchers;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 import org.springframework.util.Assert;
 
-@RunWith(TracingSegmentRunner.class)
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.powermock.api.mockito.PowerMockito.when;
+
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
+@PrepareForTest({RpcContext.class})
 public class DubboInterceptorTest {
 
     @SegmentStoragePoint
@@ -71,10 +72,6 @@ public class DubboInterceptorTest {
 
     @Rule
     public AgentServiceRule agentServiceRule = new AgentServiceRule();
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
-
-    private static MockedStatic<RpcContext> RPC_CONTEXT_MOCK;
 
     @Mock
     private EnhancedInstance enhancedInstance;
@@ -95,22 +92,18 @@ public class DubboInterceptorTest {
     private Object[] allArguments;
     private Class[] argumentTypes;
 
-    @BeforeClass
-    public static void beforeClass() {
-        RPC_CONTEXT_MOCK = Mockito.mockStatic(RpcContext.class);
-    }
-
     @Before
     public void setUp() throws Exception {
         dubboInterceptor = new DubboInterceptor();
+
+        PowerMockito.mockStatic(RpcContext.class);
 
         when(invoker.getUrl()).thenReturn(URL.valueOf("dubbo://127.0.0.1:20880/org.apache.skywalking.apm.test.TestDubboService"));
         when(invocation.getMethodName()).thenReturn("test");
         when(invocation.getParameterTypes()).thenReturn(new Class[] {String.class});
         when(invocation.getArguments()).thenReturn(new Object[] {"abc"});
-        RPC_CONTEXT_MOCK.when(RpcContext::getContext).thenReturn(rpcContext);
+        PowerMockito.when(RpcContext.getContext()).thenReturn(rpcContext);
         when(rpcContext.isConsumerSide()).thenReturn(true);
-        when(rpcContext.getUrl()).thenReturn(URL.valueOf("dubbo://127.0.0.1:20880/org.apache.skywalking.apm.test.TestDubboService"));
         allArguments = new Object[] {
             invoker,
             invocation
@@ -120,11 +113,6 @@ public class DubboInterceptorTest {
             invocation.getClass()
         };
         Config.Agent.SERVICE_NAME = "DubboTestCases-APP";
-    }
-
-    @AfterClass
-    public static void afterClass() {
-        RPC_CONTEXT_MOCK.close();
     }
 
     @Test

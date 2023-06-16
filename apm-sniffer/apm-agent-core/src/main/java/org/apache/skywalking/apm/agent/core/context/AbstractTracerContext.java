@@ -133,9 +133,4 @@ public interface AbstractTracerContext {
      * Get current correlation context
      */
     CorrelationContext getCorrelationContext();
-
-    /**
-     * Get current primary endpoint name
-     */
-    String getPrimaryEndpointName();
 }

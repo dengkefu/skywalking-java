@@ -41,6 +41,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
 import java.nio.charset.Charset;
 import java.util.Collection;
@@ -54,7 +57,9 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(TracingSegmentRunner.class)
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
+@PrepareForTest({Response.class})
 public class DefaultHttpClientInterceptorTest {
 
     @SegmentStoragePoint
@@ -109,7 +114,7 @@ public class DefaultHttpClientInterceptorTest {
         assertSpan(finishedSpan);
 
         List<TagValuePair> tags = SpanHelper.getTags(finishedSpan);
-        assertThat(tags.size(), is(3));
+        assertThat(tags.size(), is(2));
         assertThat(tags.get(0).getValue(), is("GET"));
         assertThat(tags.get(1).getValue(), is("http://skywalking.org/test/var"));
         assertThat(finishedSpan.getOperationName(), is("/test/{pathVar}"));
@@ -165,7 +170,7 @@ public class DefaultHttpClientInterceptorTest {
         assertSpan(finishedSpan);
 
         List<TagValuePair> tags = SpanHelper.getTags(finishedSpan);
-        assertThat(tags.size(), is(3));
+        assertThat(tags.size(), is(2));
         assertThat(tags.get(0).getValue(), is("GET"));
         assertThat(tags.get(1).getValue(), is("http://skywalking.org/test/var"));
 

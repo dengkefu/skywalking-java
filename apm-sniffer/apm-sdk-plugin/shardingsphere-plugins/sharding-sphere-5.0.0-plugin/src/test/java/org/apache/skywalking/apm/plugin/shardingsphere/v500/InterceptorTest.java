@@ -18,12 +18,6 @@
 
 package org.apache.skywalking.apm.plugin.shardingsphere.v500;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import org.apache.shardingsphere.infra.binder.LogicSQL;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractTracingSpan;
 import org.apache.skywalking.apm.agent.core.context.trace.TraceSegment;
@@ -37,28 +31,39 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
-@RunWith(TracingSegmentRunner.class)
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
 public class InterceptorTest {
 
     @SegmentStoragePoint
     private SegmentStorage segmentStorage;
-
+    
     @Rule
     public AgentServiceRule serviceRule = new AgentServiceRule();
-
+    
     private ProxyRootInvokeInterceptor proxyRootInvokeInterceptor;
-
+    
     private JDBCRootInvokeInterceptor jdbcRootInvokeInterceptor;
-
+    
     private ParseInterceptor parseInterceptor;
-
+    
     private RouteInterceptor routeInterceptor;
-
+    
     private RewriteInterceptor rewriteInterceptor;
-
+    
     private ExecuteInterceptor executeInterceptor;
-
+    
     @Before
     public void setUp() {
         proxyRootInvokeInterceptor = new ProxyRootInvokeInterceptor();
@@ -109,7 +114,7 @@ public class InterceptorTest {
         assertThat(spans.get(0).getOperationName(), is("/ShardingSphere/parseSQL/"));
         SpanAssert.assertTag(spans.get(0), 0, "SELECT * FROM t_order");
     }
-
+    
     @Test
     public void assertRoute() {
         Object[] allArguments = new Object[]{
@@ -125,7 +130,7 @@ public class InterceptorTest {
         assertThat(spans.size(), is(1));
         assertThat(spans.get(0).getOperationName(), is("/ShardingSphere/routeSQL/"));
     }
-
+    
     @Test
     public void assertRewrite() {
         Object[] allArguments = new Object[]{
@@ -143,7 +148,7 @@ public class InterceptorTest {
         assertThat(spans.size(), is(1));
         assertThat(spans.get(0).getOperationName(), is("/ShardingSphere/rewriteSQL/"));
     }
-
+    
     @Test
     public void assertExecute() {
         Object[] allArguments = new Object[]{

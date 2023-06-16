@@ -17,9 +17,6 @@
 
 package org.apache.skywalking.apm.toolkit.activation.trace;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -39,10 +36,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
-@RunWith(TracingSegmentRunner.class)
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
 public class ActiveSpanTest {
 
     private TraceAnnotationMethodInterceptor methodInterceptor;
@@ -55,9 +57,6 @@ public class ActiveSpanTest {
     private EnhancedInstance enhancedInstance;
     @Rule
     public AgentServiceRule serviceRule = new AgentServiceRule();
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
-
     @SegmentStoragePoint
     private SegmentStorage storage;
 

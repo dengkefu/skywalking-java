@@ -46,10 +46,9 @@ public class AsyncResponseConsumerWrapper<T> implements AsyncResponseConsumer<T>
             FutureCallback<T> resultCallback) throws HttpException, IOException {
         if (ContextManager.isActive()) {
             int statusCode = response.getCode();
-            AbstractSpan span = ContextManager.activeSpan();
-            Tags.HTTP_RESPONSE_STATUS_CODE.set(span, statusCode);
             if (statusCode >= 400) {
-                span.errorOccurred();
+                AbstractSpan span = ContextManager.activeSpan().errorOccurred();
+                Tags.HTTP_RESPONSE_STATUS_CODE.set(span, statusCode);
             }
             ContextManager.stopSpan();
         }
@@ -60,10 +59,9 @@ public class AsyncResponseConsumerWrapper<T> implements AsyncResponseConsumer<T>
     public void informationResponse(HttpResponse response, HttpContext context) throws HttpException, IOException {
         if (ContextManager.isActive()) {
             int statusCode = response.getCode();
-            AbstractSpan span = ContextManager.activeSpan();
-            Tags.HTTP_RESPONSE_STATUS_CODE.set(span, statusCode);
             if (statusCode >= 400) {
-                span.errorOccurred();
+                AbstractSpan span = ContextManager.activeSpan().errorOccurred();
+                Tags.HTTP_RESPONSE_STATUS_CODE.set(span, statusCode);
             }
             ContextManager.stopSpan();
         }

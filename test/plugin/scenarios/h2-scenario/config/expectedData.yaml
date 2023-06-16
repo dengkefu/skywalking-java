@@ -19,7 +19,7 @@ segmentItems:
   segments:
   - segmentId: not null
     spans:
-    - operationName: H2/JDBC/PreparedStatement/execute
+    - operationName: H2/JDBI/PreparedStatement/execute
       parentSpanId: 0
       spanId: 1
       spanLayer: Database
@@ -30,13 +30,13 @@ segmentItems:
       spanType: Exit
       peer: localhost:-1
       tags:
-      - {key: db.type, value: H2}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: test}
       - key: db.statement
         value: "CREATE TABLE test_007(\nid VARCHAR(1) PRIMARY KEY, \nvalue VARCHAR(1)\
           \ NOT NULL)"
       skipAnalysis: 'false'
-    - operationName: H2/JDBC/CallableStatement/execute
+    - operationName: H2/JDBI/CallableStatement/execute
       parentSpanId: 0
       spanId: 2
       spanLayer: Database
@@ -47,11 +47,11 @@ segmentItems:
       spanType: Exit
       peer: localhost:-1
       tags:
-      - {key: db.type, value: H2}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: test}
       - {key: db.statement, value: 'INSERT INTO test_007(id, value) VALUES(?,?)'}
       skipAnalysis: 'false'
-    - operationName: H2/JDBC/Statement/execute
+    - operationName: H2/JDBI/Statement/execute
       parentSpanId: 0
       spanId: 3
       spanLayer: Database
@@ -62,11 +62,11 @@ segmentItems:
       spanType: Exit
       peer: localhost:-1
       tags:
-      - {key: db.type, value: H2}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: test}
       - {key: db.statement, value: DROP table test_007}
       skipAnalysis: 'false'
-    - operationName: H2/JDBC/Connection/close
+    - operationName: H2/JDBI/Connection/close
       parentSpanId: 0
       spanId: 4
       spanLayer: Database
@@ -77,7 +77,7 @@ segmentItems:
       spanType: Exit
       peer: localhost:-1
       tags:
-      - {key: db.type, value: H2}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: test}
       - {key: db.statement, value: ''}
       skipAnalysis: 'false'
@@ -94,39 +94,4 @@ segmentItems:
       tags:
       - {key: url, value: 'http://localhost:8080/h2-scenario/case/h2-scenario'}
       - {key: http.method, value: GET}
-      - {key: http.status_code, value: '200'}
       skipAnalysis: 'false'
-meterItems:
-  - serviceName: h2-scenario
-    meterSize: 5
-    meters:
-      - meterId:
-          name: thread_pool
-          tags:
-            - {name: metric_type, value: core_pool_size}
-            - {name: pool_name, value: tomcat_execute_pool}
-        singleValue: ge 1
-      - meterId:
-          name: thread_pool
-          tags:
-            - {name: metric_type, value: max_pool_size}
-            - {name: pool_name, value: tomcat_execute_pool}
-        singleValue: ge 1
-      - meterId:
-          name: thread_pool
-          tags:
-            - {name: metric_type, value: pool_size}
-            - {name: pool_name, value: tomcat_execute_pool}
-        singleValue: ge 0
-      - meterId:
-          name: thread_pool
-          tags:
-            - {name: metric_type, value: active_size}
-            - {name: pool_name, value: tomcat_execute_pool}
-        singleValue: ge 0
-      - meterId:
-          name: thread_pool
-          tags:
-            - {name: metric_type, value: queue_size}
-            - {name: pool_name, value: tomcat_execute_pool}
-        singleValue: ge 0

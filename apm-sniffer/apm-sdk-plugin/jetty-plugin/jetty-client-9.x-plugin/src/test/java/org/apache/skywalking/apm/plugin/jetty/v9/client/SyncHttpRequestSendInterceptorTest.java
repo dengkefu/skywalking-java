@@ -18,8 +18,6 @@
 
 package org.apache.skywalking.apm.plugin.jetty.v9.client;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 import java.net.URI;
 import java.util.List;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractTracingSpan;
@@ -41,19 +39,20 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
-@RunWith(TracingSegmentRunner.class)
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
 public class SyncHttpRequestSendInterceptorTest {
 
     @SegmentStoragePoint
     private SegmentStorage segmentStorage;
     @Rule
     public AgentServiceRule serviceRule = new AgentServiceRule();
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
-
     @Mock
     private HttpClient httpClient;
     @Mock

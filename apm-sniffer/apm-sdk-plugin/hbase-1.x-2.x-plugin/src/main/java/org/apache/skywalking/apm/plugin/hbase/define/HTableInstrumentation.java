@@ -76,9 +76,8 @@ public class HTableInstrumentation extends ClassInstanceMethodsEnhancePluginDefi
             new ConstructorInterceptPoint() {
                 @Override
                 public ElementMatcher<MethodDescription> getConstructorMatcher() {
-                    return takesArguments(2)
-                            .and(takesArgumentWithType(1, "org.apache.hadoop.hbase.TableName")).or(takesArguments(6)
-                        .and(takesArgumentWithType(0, "org.apache.hadoop.hbase.TableName")));
+                    return takesArguments(6)
+                        .and(takesArgumentWithType(0, "org.apache.hadoop.hbase.TableName"));
                 }
 
                 @Override

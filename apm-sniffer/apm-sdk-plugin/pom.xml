@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.apache.skywalking</groupId>
         <artifactId>java-agent-sniffer</artifactId>
-        <version>8.17.0-SNAPSHOT</version>
+        <version>8.9.0</version>
     </parent>
 
     <artifactId>apm-sdk-plugin</artifactId>
@@ -31,9 +31,9 @@
         <module>dubbo-plugin</module>
         <module>jdbc-commons</module>
         <module>httpClient-4.x-plugin</module>
+        <module>jedis-2.x-plugin</module>
         <module>redisson-3.x-plugin</module>
         <module>tomcat-7.x-8.x-plugin</module>
-        <module>tomcat-10x-plugin</module>
         <module>motan-plugin</module>
         <module>mongodb-3.x-plugin</module>
         <module>mongodb-4.x-plugin</module>
@@ -70,7 +70,7 @@
         <module>elasticsearch-6.x-plugin</module>
         <module>elasticsearch-7.x-plugin</module>
         <module>undertow-plugins</module>
-        <module>rabbitmq-plugin</module>
+        <module>rabbitmq-5.x-plugin</module>
         <module>dubbo-conflict-patch</module>
         <module>canal-1.x-plugin</module>
         <module>dubbo-2.7.x-plugin</module>
@@ -84,6 +84,8 @@
         <module>light4j-plugins</module>
         <module>pulsar-2.2-2.7-plugin</module>
         <module>netty-socketio-plugin</module>
+        <module>armeria-0.84.x-plugin</module>
+        <module>armeria-0.85.x-plugin</module>
         <module>httpclient-3.x-plugin</module>
         <module>play-2.x-plugin</module>
         <module>lettuce-5.x-plugin</module>
@@ -93,7 +95,6 @@
         <module>mariadb-2.x-plugin</module>
         <module>influxdb-2.x-plugin</module>
         <module>baidu-brpc-plugin</module>
-        <module>baidu-brpc-3.x-plugin</module>
         <module>hbase-1.x-2.x-plugin</module>
         <module>graphql-plugin</module>
         <module>xxl-job-2.x-plugin</module>
@@ -111,27 +112,11 @@
         <module>druid-1.x-plugin</module>
         <module>hikaricp-3.x-4.x-plugin</module>
         <module>httpclient-5.x-plugin</module>
-        <module>clickhouse-0.3.2.x-plugin</module>
-        <module>clickhouse-0.3.1-plugin</module>
+        <module>clickhouse-0.3.x-plugin</module>
         <module>kylin-jdbc-2.6.x-3.x-4.x-plugin</module>
         <module>okhttp-2.x-plugin</module>
         <module>pulsar-common</module>
         <module>pulsar-2.8.x-plugin</module>
-        <module>undertow-worker-thread-pool-plugin</module>
-        <module>tomcat-thread-pool-plugin</module>
-        <module>guava-eventbus-plugin</module>
-        <module>hutool-plugins</module>
-        <module>micronaut-plugins</module>
-        <module>nats-2.14.x-2.15.x-plugin</module>
-        <module>jedis-plugins</module>
-        <module>impala-jdbc-2.6.x-plugin</module>
-        <module>apm-armeria-plugins</module>
-        <module>jetty-thread-pool-plugin</module>
-        <module>jersey-2.x-plugin</module>
-        <module>jersey-3.x-plugin</module>
-        <module>grizzly-2.3.x-4.x-plugin</module>
-        <module>grizzly-2.3.x-4.x-work-threadpool-plugin</module>
-        <module>rocketMQ-5.x-plugin</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -176,15 +161,6 @@
             <artifactId>apm-test-tools</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-inline</artifactId>
         </dependency>
     </dependencies>
 

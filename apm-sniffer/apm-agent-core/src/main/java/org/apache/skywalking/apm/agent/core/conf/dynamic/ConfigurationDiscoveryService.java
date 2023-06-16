@@ -43,7 +43,6 @@ import org.apache.skywalking.apm.agent.core.logging.api.LogManager;
 import org.apache.skywalking.apm.agent.core.remote.GRPCChannelListener;
 import org.apache.skywalking.apm.agent.core.remote.GRPCChannelManager;
 import org.apache.skywalking.apm.agent.core.remote.GRPCChannelStatus;
-import org.apache.skywalking.apm.agent.core.util.CollectionUtil;
 import org.apache.skywalking.apm.network.language.agent.v3.ConfigurationDiscoveryServiceGrpc;
 import org.apache.skywalking.apm.network.language.agent.v3.ConfigurationSyncRequest;
 import org.apache.skywalking.apm.network.common.v3.Commands;
@@ -119,16 +118,10 @@ public class ConfigurationDiscoveryService implements BootService, GRPCChannelLi
      *
      * @param watcher dynamic configuration watcher
      */
-    public synchronized void registerAgentConfigChangeWatcher(AgentConfigChangeWatcher watcher) {
+    public void registerAgentConfigChangeWatcher(AgentConfigChangeWatcher watcher) {
         WatcherHolder holder = new WatcherHolder(watcher);
         if (register.containsKey(holder.getKey())) {
-            List<WatcherHolder> watcherHolderList = register.get(holder.getKey());
-            for (WatcherHolder watcherHolder : watcherHolderList) {
-                if (watcherHolder.getWatcher().getClass().equals(watcher.getClass())) {
-                    LOGGER.debug("Duplicate register, watcher={}", watcher);
-                    return;
-                }
-            }
+            throw new IllegalStateException("Duplicate register, watcher=" + watcher);
         }
         register.put(holder.getKey(), holder);
     }
@@ -149,33 +142,31 @@ public class ConfigurationDiscoveryService implements BootService, GRPCChannelLi
 
         config.forEach(property -> {
             String propertyKey = property.getKey();
-            List<WatcherHolder> holderList = register.get(propertyKey);
-            for (WatcherHolder holder : holderList) {
-                if (holder != null) {
-                    AgentConfigChangeWatcher watcher = holder.getWatcher();
-                    String newPropertyValue = property.getValue();
-                    if (StringUtil.isBlank(newPropertyValue)) {
-                        if (watcher.value() != null) {
-                            // Notify watcher, the new value is null with delete event type.
-                            watcher.notify(
-                                    new AgentConfigChangeWatcher.ConfigChangeEvent(
-                                            null, AgentConfigChangeWatcher.EventType.DELETE
-                                    ));
-                        } else {
-                            // Don't need to notify, stay in null.
-                        }
-                    } else {
-                        if (!newPropertyValue.equals(watcher.value())) {
-                            watcher.notify(new AgentConfigChangeWatcher.ConfigChangeEvent(
-                                    newPropertyValue, AgentConfigChangeWatcher.EventType.MODIFY
+            WatcherHolder holder = register.get(propertyKey);
+            if (holder != null) {
+                AgentConfigChangeWatcher watcher = holder.getWatcher();
+                String newPropertyValue = property.getValue();
+                if (StringUtil.isBlank(newPropertyValue)) {
+                    if (watcher.value() != null) {
+                        // Notify watcher, the new value is null with delete event type.
+                        watcher.notify(
+                            new AgentConfigChangeWatcher.ConfigChangeEvent(
+                                null, AgentConfigChangeWatcher.EventType.DELETE
                             ));
-                        } else {
-                            // Don't need to notify, stay in the same config value.
-                        }
+                    } else {
+                        // Don't need to notify, stay in null.
                     }
                 } else {
-                    LOGGER.warn("Config {} from OAP, doesn't match any watcher, ignore.", propertyKey);
+                    if (!newPropertyValue.equals(watcher.value())) {
+                        watcher.notify(new AgentConfigChangeWatcher.ConfigChangeEvent(
+                            newPropertyValue, AgentConfigChangeWatcher.EventType.MODIFY
+                        ));
+                    } else {
+                        // Don't need to notify, stay in the same config value.
+                    }
                 }
+            } else {
+                LOGGER.warn("Config {} from OAP, doesn't match any watcher, ignore.", propertyKey);
             }
         });
         this.uuid = responseUuid;
@@ -247,25 +238,17 @@ public class ConfigurationDiscoveryService implements BootService, GRPCChannelLi
      * Local dynamic configuration center.
      */
     public static class Register {
-        private final Map<String, List<WatcherHolder>> register = new HashMap<>();
+        private final Map<String, WatcherHolder> register = new HashMap<>();
 
         private boolean containsKey(String key) {
             return register.containsKey(key);
         }
 
         private void put(String key, WatcherHolder holder) {
-            List<WatcherHolder> watcherHolderList = register.get(key);
-            if (CollectionUtil.isEmpty(watcherHolderList)) {
-                ArrayList<WatcherHolder> newWatchHolderList = new ArrayList<>();
-                newWatchHolderList.add(holder);
-                register.put(key, newWatchHolderList);
-            } else {
-                watcherHolderList.add(holder);
-                register.put(key, watcherHolderList);
-            }
+            register.put(key, holder);
         }
 
-        public List<WatcherHolder> get(String name) {
+        public WatcherHolder get(String name) {
             return register.get(name);
         }
 
@@ -276,13 +259,12 @@ public class ConfigurationDiscoveryService implements BootService, GRPCChannelLi
         @Override
         public String toString() {
             ArrayList<String> registerTableDescription = new ArrayList<>(register.size());
-            register.forEach((key, holderList) -> {
-                for (WatcherHolder holder : holderList) {
-                    registerTableDescription.add(new StringBuilder().append("key:")
-                            .append(key)
-                            .append("value(current):")
-                            .append(holder.getWatcher().value()).toString());
-                }
+            register.forEach((key, holder) -> {
+                AgentConfigChangeWatcher watcher = holder.getWatcher();
+                registerTableDescription.add(new StringBuilder().append("key:")
+                                                                .append(key)
+                                                                .append("value(current):")
+                                                                .append(watcher.value()).toString());
             });
             return registerTableDescription.stream().collect(Collectors.joining(",", "[", "]"));
         }

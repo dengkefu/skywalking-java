@@ -18,36 +18,39 @@
 
 package org.apache.skywalking.apm.meter.micrometer;
 
-import java.util.Arrays;
-import org.apache.skywalking.apm.agent.test.helper.FieldGetter;
+import io.micrometer.core.instrument.Counter;
 import org.junit.Assert;
 import org.junit.Test;
-import io.micrometer.core.instrument.Counter;
+import org.powermock.reflect.Whitebox;
+
+import java.util.Arrays;
 
 public class SkywalkingCounterTest {
 
     @Test
-    public void testCounter() throws IllegalAccessException, NoSuchFieldException {
-        // Creating a simplified micrometer counter
+    public void testCounter() {
+        // Creating a simplify micrometer counter
         final SkywalkingMeterRegistry registry = new SkywalkingMeterRegistry();
         Counter counter = registry.counter("test_counter", "skywalking", "test");
 
         // Check Skywalking counter type
         Assert.assertTrue(counter instanceof SkywalkingCounter);
         final SkywalkingCounter skywalkingCounter = (SkywalkingCounter) counter;
-        final org.apache.skywalking.apm.toolkit.meter.Counter realCounter = FieldGetter.getValue(skywalkingCounter, "counter");
+        final org.apache.skywalking.apm.toolkit.meter.Counter realCounter =
+            Whitebox.getInternalState(skywalkingCounter, "counter");
         Assert.assertNotNull(realCounter);
     }
 
     @Test
-    public void testRateCounter() throws IllegalAccessException, NoSuchFieldException {
+    public void testRateCounter() {
         final SkywalkingMeterRegistry registry = new SkywalkingMeterRegistry(new SkywalkingConfig(Arrays.asList("test_rate_counter")));
         final Counter counter = registry.counter("test_rate_counter", "skywalking", "test");
 
         // Check Skywalking counter type
         Assert.assertTrue(counter instanceof SkywalkingCounter);
         final SkywalkingCounter skywalkingCounter = (SkywalkingCounter) counter;
-        final org.apache.skywalking.apm.toolkit.meter.Counter realCounter = FieldGetter.getValue(skywalkingCounter, "counter");
+        final org.apache.skywalking.apm.toolkit.meter.Counter realCounter =
+            Whitebox.getInternalState(skywalkingCounter, "counter");
         Assert.assertNotNull(realCounter);
     }
 }

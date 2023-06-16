@@ -32,6 +32,7 @@ import java.util.Set;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.none;
 
+
 /**
  * Enhance InfluxDB InfluxDBFactory
  * Really impl class {@link org.influxdb.impl.InfluxDBImpl}

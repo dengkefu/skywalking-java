@@ -18,13 +18,14 @@
 
 package org.apache.skywalking.apm.plugin.undertow.v2x;
 
-import static org.apache.skywalking.apm.agent.test.tools.SpanAssert.assertComponent;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
-import java.util.List;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.RoutingHandler;
+import io.undertow.server.ServerConnection;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.HttpString;
+import io.undertow.util.Methods;
+import io.undertow.util.StatusCodes;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractTracingSpan;
 import org.apache.skywalking.apm.agent.core.context.trace.SpanLayer;
 import org.apache.skywalking.apm.agent.core.context.trace.TraceSegment;
@@ -44,26 +45,26 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.RoutingHandler;
-import io.undertow.server.ServerConnection;
-import io.undertow.util.HeaderMap;
-import io.undertow.util.HttpString;
-import io.undertow.util.Methods;
-import io.undertow.util.StatusCodes;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
-@RunWith(TracingSegmentRunner.class)
+import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
+import java.util.List;
+
+import static org.apache.skywalking.apm.agent.test.tools.SpanAssert.assertComponent;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
 public class RoutingHandlerInterceptorTest {
     private RoutingHandlerInterceptor interceptor;
     @SegmentStoragePoint
     private SegmentStorage segmentStorage;
     @Rule
     public AgentServiceRule serviceRule = new AgentServiceRule();
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
     @Mock
     private HttpHandler httpHandler;
     @Mock
@@ -75,7 +76,6 @@ public class RoutingHandlerInterceptorTest {
     private EnhancedInstance enhancedInstance;
     private String template = "/projects/{projectId}/users";
     private String uri = "/projects/{projectId}/users";
-    private String endpoint = "GET:/projects/{projectId}/users";
 
     @Before
     public void setUp() throws Exception {
@@ -135,7 +135,7 @@ public class RoutingHandlerInterceptorTest {
     }
 
     private void assertHttpSpan(AbstractTracingSpan span) {
-        assertThat(span.getOperationName(), is(endpoint));
+        assertThat(span.getOperationName(), is(template));
         assertComponent(span, ComponentsDefine.UNDERTOW);
         SpanAssert.assertTag(span, 0, "http://localhost:8080" + uri);
         assertThat(span.isEntry(), is(true));

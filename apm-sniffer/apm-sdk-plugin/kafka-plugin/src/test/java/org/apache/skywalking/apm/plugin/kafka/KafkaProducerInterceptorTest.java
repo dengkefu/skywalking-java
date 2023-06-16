@@ -18,10 +18,8 @@
 
 package org.apache.skywalking.apm.plugin.kafka;
 
-import static org.apache.skywalking.apm.network.trace.component.ComponentsDefine.KAFKA_PRODUCER;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import java.util.List;
+
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractTracingSpan;
@@ -38,18 +36,21 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
-@RunWith(TracingSegmentRunner.class)
+import static org.apache.skywalking.apm.network.trace.component.ComponentsDefine.KAFKA_PRODUCER;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
 public class KafkaProducerInterceptorTest {
     @SegmentStoragePoint
     private SegmentStorage segmentStorage;
 
     @Rule
     public AgentServiceRule serviceRule = new AgentServiceRule();
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     private KafkaProducerInterceptor producerInterceptor;
 

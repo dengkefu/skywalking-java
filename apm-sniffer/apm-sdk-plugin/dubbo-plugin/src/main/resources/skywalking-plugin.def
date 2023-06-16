@@ -15,4 +15,3 @@
 # limitations under the License.
 
 dubbo=org.apache.skywalking.apm.plugin.dubbo.DubboInstrumentation
-dubbo-threadpool=org.apache.skywalking.apm.plugin.dubbo.AbstractServerInstrumentation

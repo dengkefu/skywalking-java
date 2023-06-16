@@ -18,8 +18,6 @@
 
 package org.apache.skywalking.apm.plugin.spring.mvc.v3;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import java.lang.reflect.Field;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedInstance;
 import org.apache.skywalking.apm.plugin.spring.mvc.commons.EnhanceRequireObjectCache;
@@ -27,10 +25,13 @@ import org.apache.skywalking.apm.plugin.spring.mvc.commons.PathMappingCache;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@RunWith(MockitoJUnitRunner.class)
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+
+@RunWith(PowerMockRunner.class)
 public class ControllerConstructorInterceptorTest {
 
     private ControllerConstructorInterceptor interceptor;

@@ -18,10 +18,6 @@
 
 package org.apache.skywalking.apm.plugin.jdbc.mariadb.v2;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
-import java.lang.reflect.Method;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractTracingSpan;
 import org.apache.skywalking.apm.agent.core.context.trace.SpanLayer;
 import org.apache.skywalking.apm.agent.core.context.trace.TraceSegment;
@@ -30,21 +26,29 @@ import org.apache.skywalking.apm.agent.test.helper.SegmentHelper;
 import org.apache.skywalking.apm.agent.test.tools.AgentServiceRule;
 import org.apache.skywalking.apm.agent.test.tools.SegmentStorage;
 import org.apache.skywalking.apm.agent.test.tools.SegmentStoragePoint;
-import org.apache.skywalking.apm.agent.test.tools.SpanAssert;
 import org.apache.skywalking.apm.agent.test.tools.TracingSegmentRunner;
+import org.apache.skywalking.apm.agent.test.tools.SpanAssert;
 import org.apache.skywalking.apm.network.trace.component.ComponentsDefine;
 import org.apache.skywalking.apm.plugin.jdbc.JDBCPluginConfig;
 import org.apache.skywalking.apm.plugin.jdbc.define.StatementEnhanceInfos;
 import org.apache.skywalking.apm.plugin.jdbc.trace.ConnectionInfo;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
-@RunWith(TracingSegmentRunner.class)
+import java.lang.reflect.Method;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.powermock.api.mockito.PowerMockito.when;
+
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
 public class StatementExecuteMethodsInterceptorTest {
 
     private static final String SQL = "Select * from test";
@@ -54,8 +58,6 @@ public class StatementExecuteMethodsInterceptorTest {
 
     @Rule
     public AgentServiceRule serviceRule = new AgentServiceRule();
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     private StatementExecuteMethodsInterceptor serviceMethodInterceptor;
 
@@ -69,8 +71,6 @@ public class StatementExecuteMethodsInterceptorTest {
 
     @Before
     public void setUp() {
-        JDBCPluginConfig.Plugin.JDBC.SQL_BODY_MAX_LENGTH = 2048;
-
         serviceMethodInterceptor = new StatementExecuteMethodsInterceptor();
 
         enhanceRequireCacheObject = new StatementEnhanceInfos(connectionInfo, SQL, "CallableStatement");
@@ -80,6 +80,11 @@ public class StatementExecuteMethodsInterceptorTest {
         when(connectionInfo.getDBType()).thenReturn("Mariadb");
         when(connectionInfo.getDatabaseName()).thenReturn("test");
         when(connectionInfo.getDatabasePeer()).thenReturn("localhost:3306");
+    }
+
+    @After
+    public void clean() {
+        JDBCPluginConfig.Plugin.JDBC.SQL_BODY_MAX_LENGTH = 2048;
     }
 
     @Test
@@ -92,8 +97,8 @@ public class StatementExecuteMethodsInterceptorTest {
         assertThat(SegmentHelper.getSpans(segment).size(), is(1));
         AbstractTracingSpan span = SegmentHelper.getSpans(segment).get(0);
         SpanAssert.assertLayer(span, SpanLayer.DB);
-        assertThat(span.getOperationName(), is("Mariadb/JDBC/CallableStatement/executeQuery"));
-        SpanAssert.assertTag(span, 0, "Mariadb");
+        assertThat(span.getOperationName(), is("Mariadb/JDBI/CallableStatement/"));
+        SpanAssert.assertTag(span, 0, "sql");
         SpanAssert.assertTag(span, 1, "test");
         SpanAssert.assertTag(span, 2, SQL);
     }
@@ -109,8 +114,8 @@ public class StatementExecuteMethodsInterceptorTest {
         assertThat(SegmentHelper.getSpans(segment).size(), is(1));
         AbstractTracingSpan span = SegmentHelper.getSpans(segment).get(0);
         SpanAssert.assertLayer(span, SpanLayer.DB);
-        assertThat(span.getOperationName(), is("Mariadb/JDBC/CallableStatement/executeQuery"));
-        SpanAssert.assertTag(span, 0, "Mariadb");
+        assertThat(span.getOperationName(), is("Mariadb/JDBI/CallableStatement/"));
+        SpanAssert.assertTag(span, 0, "sql");
         SpanAssert.assertTag(span, 1, "test");
         SpanAssert.assertTag(span, 2, "Select * f...");
     }

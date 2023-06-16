@@ -16,23 +16,22 @@ Every plugin maintained in the main repo requires corresponding test cases as we
 
 ## Case Base Image Introduction
 
-The test framework provides `JVM-container` and `Tomcat-container` base images including JDK8 and JDK17. You can choose the best one for your test case. If both are suitable for your case, **`JVM-container` is preferred**.
+The test framework provides `JVM-container` and `Tomcat-container` base images including JDK8 and JDK14. You can choose the best one for your test case. If both are suitable for your case, **`JVM-container` is preferred**.
 
 ### JVM-container Image Introduction
 
-[JVM-container](../../../../../test/plugin/containers/jvm-container) uses `eclipse-temurin:8-jdk` as the base image. `JVM-container` supports JDK8 and JDK17 as well in CI, which inherits `eclipse-temurin:8-jdk` and `eclipse-temurin:17-jdk`.
-It is supported to custom the base Java docker image by specify `base_image_java`.
+[JVM-container](../../../../../test/plugin/containers/jvm-container) uses `adoptopenjdk/openjdk8:alpine-jre` as the base image. `JVM-container` supports JDK14 and JDK17 as well, which inherits `adoptopenjdk/openjdk8:alpine-jre` and `eclipse-temurin:17-alpine`.
 The test case project must be packaged as `project-name.zip`, including `startup.sh` and uber jar, by using `mvn clean package`.
 
 Take the following test projects as examples:
 * [sofarpc-scenario](../../../../../test/plugin/scenarios/sofarpc-scenario) is a single project case.
 * [webflux-scenario](../../../../../test/plugin/scenarios/webflux-scenario) is a case including multiple projects.
+* [jdk14-with-gson-scenario](../../../../../test/plugin/scenarios/jdk14-with-gson-scenario) is a single project case with JDK14.
 * [jdk17-with-gson-scenario](../../../../../test/plugin/scenarios/jdk17-with-gson-scenario) is a single project case with JDK17.
 
 ### Tomcat-container Image Introduction
 
-[Tomcat-container](../../../../../test/plugin/containers/tomcat-container) uses `tomcat:8.5-jdk8-openjdk`, `tomcat:8.5-jdk17-openjdk` as the base image.
-It is supported to custom the base Tomcat docker image by specify `base_image_tomcat`.
+[Tomcat-container](../../../../../test/plugin/containers/tomcat-container) uses `tomcat:8.5-jdk8-openjdk`, `tomcat:8.5-jdk14-openjdk` or `tomcat:8.5-jdk17-openjdk` as the base image.
 The test case project must be packaged as `project-name.war` by using `mvn package`.
 
 Take the following test project as an example
@@ -58,7 +57,7 @@ All test case codes should be in the `org.apache.skywalking.apm.testcase.*` pack
         |- [resource]
             |- log4j2.xml
     |- pom.xml
-    |- configuration.yml
+    |- configuration.yaml
     |- support-version.list
 
 [] = directory
@@ -79,7 +78,7 @@ All test case codes should be in the `org.apache.skywalking.apm.testcase.*` pack
             |- [WEB-INF]
                 |- web.xml
     |- pom.xml
-    |- configuration.yml
+    |- configuration.yaml
     |- support-version.list
 
 [] = directory
@@ -91,7 +90,7 @@ The following files are required in every test case.
 File Name | Descriptions
 ---|---
 `configuration.yml` | Declare the basic case information, including case name, entrance endpoints, mode, and dependencies.
-`expectedData.yaml` | Describe the expected segmentItems, meterItems or logItems.
+`expectedData.yaml` | Describe the expected segmentItems.
 `support-version.list` | List the target versions for this case.
 `startup.sh` |`JVM-container` only. This is not required when using `Tomcat-container`.
 
@@ -109,7 +108,7 @@ File Name | Descriptions
 | withPlugins | Plugin selector rule, e.g.:`apm-spring-annotation-plugin-*.jar`. Required for `runningMode=with_optional` or `runningMode=with_bootstrap`.
 | environment | Same as `docker-compose#environment`.
 | depends_on | Same as `docker-compose#depends_on`.
-| dependencies | Same as `docker-compose#services`, `image`, `links`, `hostname`, `command`, `environment` and `depends_on` are supported.
+| dependencies | Same as `docker-compose#services`, `image`, `links`, `hostname`, `environment` and `depends_on` are supported.
 
 **Note:, `docker-compose` activates only when `dependencies` is blank.**
 
@@ -117,7 +116,7 @@ File Name | Descriptions
 
 | Option | description
 | --- | ---
-| default | Activate all plugins in `plugin` folder like the official distribution agent.
+| default | Activate all plugins in `plugin` folder like the official distribution agent. 
 | with_optional | Activate `default` and plugins in `optional-plugin` by the give selector.
 | with_bootstrap | Activate `default` and plugins in `bootstrap-plugin` by the give selector.
 
@@ -139,7 +138,7 @@ depends_on:
 dependencies:
   service1:
     image:
-    hostname:
+    hostname: 
     expose:
       ...
     environment:
@@ -202,19 +201,17 @@ as the version number, which will be changed in the test for each version.
 
 **Operator for String**
 
-| Operator     | Description                                                                                                   |
-|:-------------|:--------------------------------------------------------------------------------------------------------------|
-| `not null`   | Not null                                                                                                      |
-| `not blank`  | Not blank ,it's recommended for String type field as the default value maybe blank string, such as span tags  |
-| `null`       | Null or empty String                                                                                          |
-| `eq`         | Equal(default)                                                                                                |
-| `start with` | Tests if this string starts with the specified prefix. DO NOT use it with meterItem tags value                |
-| `end with`   | Tests if this string ends with the specified suffix. DO NOT use it with meterItem tags value                  |
+| Operator | Description |
+| :--- | :--- |
+| `not null` | Not null |
+| `null` | Null or empty String |
+| `eq` | Equal(default) |
 
 **Expected Data Format Of The Segment**
 ```yml
 segmentItems:
-- serviceName: SERVICE_NAME(string)
+-
+  serviceName: SERVICE_NAME(string)
   segmentSize: SEGMENT_SIZE(int)
   segments:
   - segmentId: SEGMENT_ID(string)
@@ -224,7 +221,7 @@ segmentItems:
 
 
 | Field |  Description
-| --- | ---
+| --- | ---  
 | serviceName | Service Name.
 | segmentSize | The number of segments is expected.
 | segmentId | Trace ID.
@@ -265,26 +262,26 @@ segmentItems:
    ...
 ```
 
-| Field | Description
-|--- |---
+| Field | Description 
+|--- |--- 
 | operationName | Span Operation Name.
-| parentSpanId | Parent span ID. **Note**: The parent span ID of the first span should be -1.
-| spanId | Span ID. **Note**: Start from 0.
+| parentSpanId | Parent span ID. **Note**: The parent span ID of the first span should be -1. 
+| spanId | Span ID. **Note**: Start from 0. 
 | startTime | Span start time. It is impossible to get the accurate time, not 0 should be enough.
 | endTime | Span finish time. It is impossible to get the accurate time, not 0 should be enough.
-| isError | Span status, true or false.
-| componentId | Component id for your plugin.
+| isError | Span status, true or false. 
+| componentId | Component id for your plugin. 
 | tags | Span tag list. **Notice**, Keep in the same order as the plugin coded.
 | logs | Span log list. **Notice**, Keep in the same order as the plugin coded.
 | SpanLayer | Options, DB, RPC_FRAMEWORK, HTTP, MQ, CACHE.
 | SpanType | Span type, options, Exit, Entry or Local.
-| peer | Remote network address, IP + port mostly. For exit span, this should be required.
+| peer | Remote network address, IP + port mostly. For exit span, this should be required. 
 
 The verify description for SegmentRef
 
-| Field | Description
-|---- |----
-| traceId |
+| Field | Description 
+|---- |---- 
+| traceId | 
 | parentTraceSegmentId | Parent SegmentId, pointing to the segment id in the parent segment.
 | parentSpanId | Parent SpanID, pointing to the span id in the parent segment.
 | parentService | The service of parent/downstream service name.
@@ -296,14 +293,15 @@ The verify description for SegmentRef
 **Expected Data Format Of The Meter Items**
 ```yml
 meterItems:
-- serviceName: SERVICE_NAME(string)
+-
+  serviceName: SERVICE_NAME(string)
   meterSize: METER_SIZE(int)
   meters:
   - ...
 ```
 
 | Field |  Description
-| --- | ---
+| --- | ---  
 | serviceName | Service Name.
 | meterSize | The number of meters is expected.
 | meters | meter list. Follow the next section to see how to describe every meter.
@@ -311,7 +309,7 @@ meterItems:
 **Expected Data Format Of The Meter**
 
 ```yml
-    meterId:
+    meterId: 
         name: NAME(string)
         tags:
         - {name: TAG_NAME(string), value: TAG_VALUE(string)}
@@ -323,68 +321,14 @@ meterItems:
 
 The verify description for MeterId
 
-| Field | Description
-|--- |---
+| Field | Description 
+|--- |--- 
 | name | meter name.
 | tags | meter tags.
 | tags.name | tag name.
 | tags.value | tag value.
 | singleValue | counter or gauge value. Using condition operate of the number to validate, such as `gt`, `ge`. If current meter is histogram, don't need to write this field.
 | histogramBuckets | histogram bucket. The bucket list must be ordered. The tool assert at least one bucket of the histogram having nonzero count. If current meter is counter or gauge, don't need to write this field.
-
-
-**Expected Data Format Of The Log Items**
-```yml
-logItems:
-- serviceName: SERVICE_NAME(string)
-  logSize: LOG_SIZE(int)
-  logs:
-  - ...
-```
-
-| Field       |  Description
-|-------------| ---
-| serviceName | Service Name.
-| logSize     | The number of logs is expected.
-| logs        | log list. Follow the next section to see how to describe every log.
-
-**Expected Data Format Of The Log**
-
-```yml
-    timestamp: TIMESTAMP_VALUE(int)
-    endpoint: ENDPOINT_VALUE(int)
-    traceContext:
-      traceId: TRACE_ID_VALUE(string)
-      traceSegmentId: TRACE_SEGMENT_ID_VALUE(string)
-      spanId: SPAN_ID_VALUE(int)
-    body:
-      type: TYPE_VALUE(string)
-      content: # Choose one of three (text, json or yaml)
-        text: TEXT_VALUE(string)
-        # json: JSON_VALUE(string)
-        # yaml: YAML_VALUE(string)
-    tags:
-      data:
-        - key: TAG_KEY(string)
-          value: TAG_VALUE(string)
-        ...
-    layer: LAYER_VALUE(string)
-    ...
-```
-
-The verify description for Log
-
-| Field                       | Description
-|-----------------------------|---
-| timestamp                   | log timestamp.
-| endpoint                    | log endpoint.
-| traceContext.traceId        | log associated trace id.
-| traceContext.traceSegmentId | log associated trace segment id.
-| traceContext.spanId         | log associated span id.
-| body.type                   | log body type.
-| body.content                | log content, the sub field choose one of three (text, json or yaml).
-| tags.data                   | log tags, key value pairs.
-| layer                       | log layer.
 
 ### startup.sh
 
@@ -403,7 +347,7 @@ The following system environment variables are available in the shell.
 > `${agent_opts}` is required to add into your `java -jar` command, which including the parameter injected by test framework, and
 > make agent installed. All other parameters should be added after `${agent_opts}`.
 
-The test framework will set the service name as the test case folder name by default, but in some cases, there are more
+The test framework will set the service name as the test case folder name by default, but in some cases, there are more 
 than one test projects are required to run in different service codes, could set it explicitly like the following example.
 
 Example
@@ -464,7 +408,7 @@ Then, runs and generates a project, named by `scenario_name`, in `./scenarios`.
 
 Heartbeat service is designed for checking the service available status. This service is a simple HTTP service, returning 200 means the
 target service is ready. Then the traffic generator will access the entry service and verify the expected data.
-User should consider to use this service to detect such as whether the dependent services are ready, especially when
+User should consider to use this service to detect such as whether the dependent services are ready, especially when 
 dependent services are database or cluster.
 
 Notice, because heartbeat service could be traced fully or partially, so, segmentSize in `expectedData.yaml` should use `ge` as the operator,
@@ -534,7 +478,6 @@ SegmentA span list should like following
           tags:
             - {key: url, value: 'http://127.0.0.1:8080/httpclient-case/case/context-propagate'}
             - {key: http.method, value: GET}
-            - {key: http.status_code, value: '200'}
           logs: []
           peer: 127.0.0.1:8080
         - operationName: /httpclient-case/case/httpclient
@@ -549,7 +492,6 @@ SegmentA span list should like following
           tags:
             - {key: url, value: 'http://localhost:{SERVER_OUTPUT_PORT}/httpclient-case/case/httpclient'}
             - {key: http.method, value: GET}
-            - {key: http.status_code, value: '200'}
           logs: []
           peer: null
 ```
@@ -567,7 +509,6 @@ SegmentB span list should like following
    tags:
    - {key: url, value: 'http://127.0.0.1:8080/httpclient-case/case/context-propagate'}
    - {key: http.method, value: GET}
-   - {key: http.status_code, value: '200'}
    logs: []
    startTime: nq 0
    endTime: nq 0
@@ -600,22 +541,22 @@ MeterFactory.histogram("test_histogram").tag("hk1", "hv1").steps(1d, 5d, 10d).bu
 |   Plugin    |         |    Agent core    |
 |             |         |                  |
 +-----|-------+         +---------|--------+
-      |                           |
-      |                           |
-      |    Build or operate      +-+
-      +------------------------> |-|
+      |                           |         
+      |                           |         
+      |    Build or operate      +-+        
+      +------------------------> |-|        
       |                          |-]
+      |                          |-|        
+      |                          |-|        
       |                          |-|
-      |                          |-|
-      |                          |-|
-      |                          |-|
-      | <--------------------------|
-      |                          +-+
-      |                           |
-      |                           |
-      |                           |
-      |                           |
-      +                           +
+      |                          |-|        
+      | <--------------------------|        
+      |                          +-+        
+      |                           |         
+      |                           |         
+      |                           |         
+      |                           |         
+      +                           +         
 ```
 
 #### meterItems
@@ -680,7 +621,7 @@ Every test case is a GitHub Actions Job. Please use the scenario directory name 
 mostly you'll just need to decide which file (`plugins-test.<n>.yaml`) to add your test case, and simply put one line (as follows) in it, take the existed cases as examples.
 You can run `python3 tools/select-group.py` to see which file contains the least cases and add your cases into it, in order to balance the running time of each group.
 
-If a test case required to run in JDK 17 environment, please add you test case into file `plugins-jdk17-test.<n>.yaml`.
+If a test case required to run in JDK 14 environment, please add you test case into file `plugins-jdk14-test.<n>.yaml`.
 
 ```yaml
 jobs:

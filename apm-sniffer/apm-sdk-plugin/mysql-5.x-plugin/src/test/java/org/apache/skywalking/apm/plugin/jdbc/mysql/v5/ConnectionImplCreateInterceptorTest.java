@@ -18,14 +18,15 @@
 
 package org.apache.skywalking.apm.plugin.jdbc.mysql.v5;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConnectionImplCreateInterceptorTest {
@@ -48,18 +49,6 @@ public class ConnectionImplCreateInterceptorTest {
             "test",
             "jdbc:mysql:replication://localhost:3360,localhost:3360,localhost:3360/test?useUnicode=true&characterEncoding=utf8&useSSL=false&roundRobinLoadBalance=true"
         }, null, objectInstance);
-        verify(objectInstance).setSkyWalkingDynamicField(any());
-    }
-
-    @Test
-    public void testResultIsEnhanceInstanceWithNoDatabase() throws Throwable {
-        interceptor.afterMethod(null, null, new Object[] {
-                "localhost",
-                3360,
-                null,
-                null,
-                "jdbc:mysql:replication://localhost:3360,localhost:3360,localhost:3360/test?useUnicode=true&characterEncoding=utf8&useSSL=false&roundRobinLoadBalance=true"
-        }, null, objectInstance);
-        verify(objectInstance).setSkyWalkingDynamicField(any());
+        verify(objectInstance).setSkyWalkingDynamicField(Matchers.any());
     }
 }

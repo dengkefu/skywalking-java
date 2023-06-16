@@ -49,11 +49,11 @@ public class DubboInterceptor implements InstanceMethodsAroundInterceptor {
     public static final String ARGUMENTS = "arguments";
 
     /**
-     * Consumer: The serialized trace context data will
+     * <h2>Consumer:</h2> The serialized trace context data will
      * inject to the {@link RpcContext#attachments} for transport to provider side.
      * <p>
-     * Provider: The serialized trace context data will extract from
-     * {@link RpcContext#attachments}. current trace segment will ref if the serialization context data is not null.
+     * <h2>Provider:</h2> The serialized trace context data will extract from
+     * {@link RpcContext#attachments}. current trace segment will ref if the serialize context data is not null.
      */
     @Override
     public void beforeMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes,

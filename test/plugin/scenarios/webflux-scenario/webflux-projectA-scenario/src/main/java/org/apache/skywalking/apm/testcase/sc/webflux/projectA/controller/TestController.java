@@ -46,7 +46,6 @@ public class TestController {
         visit("http://" + hostBAddress + "/testcase/route/error");
         visit("http://" + hostBAddress + "/notFound");
         visit("http://" + hostBAddress + "/testcase/annotation/mono/hello");
-        visit("http://" + hostBAddress + "/testcase/annotation/mono/onnext");
         testGet("http://" + hostBAddress + "/testcase/webclient/server");
         return "test";
     }

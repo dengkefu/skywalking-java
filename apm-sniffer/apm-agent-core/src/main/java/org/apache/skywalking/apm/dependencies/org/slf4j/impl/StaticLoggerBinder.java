@@ -51,7 +51,7 @@ public final class StaticLoggerBinder implements LoggerFactoryBinder {
 
     /**
      * Returns the singleton of this class.
-     * Don't delete this method, this method will called by {@link org.slf4j.LoggerFactory#bind()}
+     * Dot't delete this method, this method will called by {@link org.slf4j.LoggerFactory#bind()}
      *
      * @return the StaticLoggerBinder singleton
      */

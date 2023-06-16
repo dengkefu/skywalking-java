@@ -18,7 +18,6 @@
 
 package org.apache.skywalking.apm.plugin.lettuce.v5;
 
-import io.lettuce.core.codec.StringCodec;
 import io.lettuce.core.protocol.CommandArgs;
 import io.lettuce.core.protocol.DecoratedCommand;
 import io.lettuce.core.protocol.RedisCommand;
@@ -34,18 +33,16 @@ import org.apache.skywalking.apm.network.trace.component.ComponentsDefine;
 import org.apache.skywalking.apm.util.StringUtil;
 
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @SuppressWarnings("unchecked")
 public class RedisChannelWriterInterceptor implements InstanceMethodsAroundInterceptor {
 
     private static final String PASSWORD_MASK = "******";
     private static final String ABBR = "...";
+    private static final String DELIMITER_SPACE = " ";
     private static final String AUTH = "AUTH";
-    private static final StringCodec STRING_CODEC = new StringCodec();
 
     @Override
     public void beforeMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, MethodInterceptResult result) {
@@ -66,48 +63,45 @@ public class RedisChannelWriterInterceptor implements InstanceMethodsAroundInter
             return;
         }
 
+        StringBuilder dbStatement = new StringBuilder();
         String operationName = "Lettuce/";
-        String key = Constants.EMPTY_STRING;
-        String command = Constants.EMPTY_STRING;
         if (allArguments[0] instanceof RedisCommand) {
             RedisCommand<?, ?, ?> redisCommand = (RedisCommand<?, ?, ?>) allArguments[0];
-            command = redisCommand.getType().name();
+            String command = redisCommand.getType().name();
             operationName = operationName + command;
+            dbStatement.append(command);
             if (LettucePluginConfig.Plugin.Lettuce.TRACE_REDIS_PARAMETERS) {
-                key = getArgsKey(redisCommand);
+                dbStatement.append(DELIMITER_SPACE).append(getArgsStatement(redisCommand));
             }
         } else if (allArguments[0] instanceof Collection) {
+            Collection<RedisCommand<?, ?, ?>> redisCommands = (Collection<RedisCommand<?, ?, ?>>) allArguments[0];
             operationName = operationName + "BATCH_WRITE";
-            command = "BATCH_WRITE";
+            for (RedisCommand<?, ?, ?> redisCommand : redisCommands) {
+                dbStatement.append(redisCommand.getType().name()).append(";");
+            }
         }
         AbstractSpan span = ContextManager.createExitSpan(operationName, peer);
         span.setComponent(ComponentsDefine.LETTUCE);
-        Tags.CACHE_TYPE.set(span, "Redis");
-        if (StringUtil.isNotEmpty(key)) {
-            Tags.CACHE_KEY.set(span, key);
-        }
-        Tags.CACHE_CMD.set(span, command);
-        parseOperation(command.toLowerCase()).ifPresent(op -> Tags.CACHE_OP.set(span, op));
+        Tags.DB_TYPE.set(span, "Redis");
+        Tags.DB_STATEMENT.set(span, dbStatement.toString());
         SpanLayer.asCache(span);
         span.prepareForAsync();
         ContextManager.stopSpan();
         enhancedCommand.setSkyWalkingDynamicField(span);
     }
 
-    private String getArgsKey(RedisCommand<?, ?, ?> redisCommand) {
+    private String getArgsStatement(RedisCommand<?, ?, ?> redisCommand) {
+        String statement;
         if (AUTH.equalsIgnoreCase(redisCommand.getType().name())) {
-            return PASSWORD_MASK;
+            statement = PASSWORD_MASK;
+        } else {
+            CommandArgs<?, ?> args = redisCommand.getArgs();
+            statement = (args != null) ? args.toCommandString() : Constants.EMPTY_STRING;
         }
-        CommandArgs<?, ?> args = redisCommand.getArgs();
-        if (args == null) {
-            return Constants.EMPTY_STRING;
-        } 
-        ByteBuffer firstEncodedKey = args.getFirstEncodedKey();
-        String key = STRING_CODEC.decodeKey(firstEncodedKey);    
-        if (StringUtil.isNotEmpty(key) && key.length() > LettucePluginConfig.Plugin.Lettuce.REDIS_PARAMETER_MAX_LENGTH) {
-            key = StringUtil.cut(key, LettucePluginConfig.Plugin.Lettuce.REDIS_PARAMETER_MAX_LENGTH) + ABBR;
+        if (StringUtil.isNotEmpty(statement) && statement.length() > LettucePluginConfig.Plugin.Lettuce.REDIS_PARAMETER_MAX_LENGTH) {
+            statement = statement.substring(0, LettucePluginConfig.Plugin.Lettuce.REDIS_PARAMETER_MAX_LENGTH) + ABBR;
         }
-        return key;
+        return statement;
     }
 
     @Override
@@ -149,15 +143,5 @@ public class RedisChannelWriterInterceptor implements InstanceMethodsAroundInter
             }
         }
         return command;
-    }
-
-    private Optional<String> parseOperation(String cmd) {
-        if (LettucePluginConfig.Plugin.Lettuce.OPERATION_MAPPING_READ.contains(cmd)) {
-            return Optional.of("read");
-        }
-        if (LettucePluginConfig.Plugin.Lettuce.OPERATION_MAPPING_WRITE.contains(cmd)) {
-            return Optional.of("write");
-        }
-        return Optional.empty();
     }
 }

@@ -18,10 +18,11 @@
 
 package org.apache.skywalking.apm.plugin.mongodb.v3.interceptor.v37;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.mongodb.MongoNamespace;
+import com.mongodb.ReadConcern;
+import com.mongodb.client.internal.OperationExecutor;
+import com.mongodb.operation.FindOperation;
+import com.mongodb.operation.WriteOperation;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractTracingSpan;
@@ -48,15 +49,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import com.mongodb.MongoNamespace;
-import com.mongodb.ReadConcern;
-import com.mongodb.client.internal.OperationExecutor;
-import com.mongodb.operation.FindOperation;
-import com.mongodb.operation.WriteOperation;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
-@RunWith(TracingSegmentRunner.class)
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
+
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
 public class MongoDBOperationExecutorInterceptorTest {
 
     @SegmentStoragePoint
@@ -64,8 +66,6 @@ public class MongoDBOperationExecutorInterceptorTest {
 
     @Rule
     public AgentServiceRule serviceRule = new AgentServiceRule();
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     @Mock
     private EnhancedInstance enhancedInstance;
@@ -88,7 +88,7 @@ public class MongoDBOperationExecutorInterceptorTest {
         BsonDocument document = new BsonDocument();
         document.append("name", new BsonString("by"));
         MongoNamespace mongoNamespace = new MongoNamespace("test.user");
-        Decoder decoder = mock(Decoder.class);
+        Decoder decoder = PowerMockito.mock(Decoder.class);
         FindOperation findOperation = new FindOperation(mongoNamespace, decoder);
         findOperation.filter(document);
 

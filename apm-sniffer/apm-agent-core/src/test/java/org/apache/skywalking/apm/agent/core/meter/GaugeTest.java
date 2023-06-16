@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.skywalking.apm.agent.core.boot.ServiceManager;
-import org.apache.skywalking.apm.agent.core.context.util.FieldGetter;
 import org.apache.skywalking.apm.agent.core.test.tools.AgentServiceRule;
 import org.apache.skywalking.apm.network.language.agent.v3.Label;
 import org.apache.skywalking.apm.network.language.agent.v3.MeterData;
@@ -32,6 +31,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.powermock.reflect.Whitebox;
 
 public class GaugeTest {
     @Rule
@@ -43,9 +43,9 @@ public class GaugeTest {
     }
 
     @After
-    public void after() throws IllegalAccessException, NoSuchFieldException {
+    public void after() {
         final MeterService meterService = ServiceManager.INSTANCE.findService(MeterService.class);
-        ((ConcurrentHashMap<MeterId, BaseMeter>) FieldGetter.getValue(meterService, "meterMap")).clear();
+        ((ConcurrentHashMap<MeterId, BaseMeter>) Whitebox.getInternalState(meterService, "meterMap")).clear();
     }
 
     @Test

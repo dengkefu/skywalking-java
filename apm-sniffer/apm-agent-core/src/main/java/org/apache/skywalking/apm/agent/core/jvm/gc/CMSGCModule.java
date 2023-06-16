@@ -36,4 +36,8 @@ public class CMSGCModule extends GCModule {
         return "ParNew";
     }
 
+    @Override
+    protected String getNormalGCName() {
+        return null;
+    }
 }

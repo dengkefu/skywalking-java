@@ -24,8 +24,6 @@ import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstanceM
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.MethodInterceptResult;
 import org.apache.skywalking.apm.plugin.spring.cloud.gateway.v3x.define.EnhanceObjectCache;
 import org.reactivestreams.Publisher;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.SignalType;
 import reactor.netty.Connection;
 import reactor.netty.http.client.HttpClientResponse;
 
@@ -41,7 +39,7 @@ public class HttpClientFinalizerResponseConnectionInterceptor implements Instanc
 
     @Override
     public void beforeMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes,
-            MethodInterceptResult result) {
+            MethodInterceptResult result) throws Throwable {
         BiFunction<? super HttpClientResponse, ? super Connection, ? extends Publisher> finalReceiver = (BiFunction<? super HttpClientResponse, ? super Connection, ? extends Publisher>) allArguments[0];
         EnhanceObjectCache cache = (EnhanceObjectCache) objInst.getSkyWalkingDynamicField();
         allArguments[0] = (BiFunction<HttpClientResponse, Connection, Publisher>) (response, connection) -> {
@@ -49,54 +47,26 @@ public class HttpClientFinalizerResponseConnectionInterceptor implements Instanc
             if (cache == null) {
                 return publisher;
             }
-            // receive the response.
+            // receive the response. Stop the span.
             if (cache.getSpan() != null) {
                 if (response.status().code() >= HttpResponseStatus.BAD_REQUEST.code()) {
                     cache.getSpan().errorOccurred();
                 }
                 Tags.HTTP_RESPONSE_STATUS_CODE.set(cache.getSpan(), response.status().code());
+                cache.getSpan().asyncFinish();
             }
-            
+
+            if (cache.getSpan1() != null) {
+                cache.getSpan1().asyncFinish();
+            }
             return publisher;
         };
     }
 
     @Override
     public Object afterMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes,
-                              Object ret) {
-        Flux<?> responseFlux = (Flux<?>) ret;
-
-        responseFlux = responseFlux
-                .doOnError(e -> {
-                    EnhanceObjectCache cache = (EnhanceObjectCache) objInst.getSkyWalkingDynamicField();
-                    if (cache == null) {
-                        return;
-                    }
-                    
-                    if (cache.getSpan() != null) {
-                        cache.getSpan().errorOccurred();
-                        cache.getSpan().log(e);
-                    }
-                })
-                .doFinally(signalType -> {
-                    EnhanceObjectCache cache = (EnhanceObjectCache) objInst.getSkyWalkingDynamicField();
-                    if (cache == null) {
-                        return;
-                    }
-                    // do finally. Finish the span.
-                    if (cache.getSpan() != null) {
-                        if (signalType == SignalType.CANCEL) {
-                            cache.getSpan().errorOccurred();
-                        }
-                        cache.getSpan().asyncFinish();
-                    }
-
-                    if (cache.getSpan1() != null) {
-                        cache.getSpan1().asyncFinish();
-                    }
-                });
-
-        return responseFlux;
+            Object ret) throws Throwable {
+        return ret;
     }
 
     @Override

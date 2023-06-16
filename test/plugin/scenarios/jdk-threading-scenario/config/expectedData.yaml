@@ -32,7 +32,6 @@ segmentItems:
       tags:
       - {key: url, value: 'http://localhost:8080/greet/skywalking'}
       - {key: http.method, value: GET}
-      - {key: http.status_code, value: '200'}
       skipAnalysis: 'false'
   - segmentId: not null
     spans:
@@ -49,7 +48,6 @@ segmentItems:
       tags:
       - {key: url, value: 'https://github.com/apache/skywalking'}
       - {key: http.method, value: GET}
-      - {key: http.status_code, value: '200'}
       skipAnalysis: 'false'
     - operationName: Threading/test.apache.skywalking.apm.testcase.jdk.threading.Application$TestController$1/run
       parentSpanId: -1
@@ -81,7 +79,6 @@ segmentItems:
       tags:
       - {key: url, value: 'https://github.com/apache/skywalking'}
       - {key: http.method, value: GET}
-      - {key: http.status_code, value: '200'}
       skipAnalysis: 'false'
     - operationName: Threading/test.apache.skywalking.apm.testcase.jdk.threading.Application$TestController$2/call
       parentSpanId: -1

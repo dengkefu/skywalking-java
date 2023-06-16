@@ -23,16 +23,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Enumeration;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 import org.apache.skywalking.apm.agent.core.boot.AgentPackageNotFoundException;
 import org.apache.skywalking.apm.agent.core.boot.AgentPackagePath;
 import org.apache.skywalking.apm.agent.core.logging.api.ILog;
@@ -42,8 +37,6 @@ import org.apache.skywalking.apm.agent.core.logging.core.PatternLogResolver;
 import org.apache.skywalking.apm.util.ConfigInitializer;
 import org.apache.skywalking.apm.util.PropertyPlaceholderHelper;
 import org.apache.skywalking.apm.util.StringUtil;
-
-import static org.apache.skywalking.apm.agent.core.conf.Constants.SERVICE_NAME_PART_CONNECTOR;
 
 /**
  * The <code>SnifferConfigInitializer</code> initializes all configs in several way.
@@ -103,19 +96,8 @@ public class SnifferConfigInitializer {
         configureLogger();
         LOGGER = LogManager.getLogger(SnifferConfigInitializer.class);
 
-        setAgentVersion();
-
         if (StringUtil.isEmpty(Config.Agent.SERVICE_NAME)) {
             throw new ExceptionInInitializerError("`agent.service_name` is missing.");
-        } else {
-            if (StringUtil.isNotEmpty(Config.Agent.NAMESPACE) || StringUtil.isNotEmpty(Config.Agent.CLUSTER)) {
-                Config.Agent.SERVICE_NAME = StringUtil.join(
-                    SERVICE_NAME_PART_CONNECTOR,
-                    Config.Agent.SERVICE_NAME,
-                    Config.Agent.NAMESPACE,
-                    Config.Agent.CLUSTER
-                );
-            }
         }
         if (StringUtil.isEmpty(Config.Collector.BACKEND_SERVICE)) {
             throw new ExceptionInInitializerError("`collector.backend_service` is missing.");
@@ -198,7 +180,7 @@ public class SnifferConfigInitializer {
      * <p>
      * such as: Property key of `agent.service_name` should be `skywalking.agent.service_name`
      */
-    private static void overrideConfigBySystemProp() {
+    private static void overrideConfigBySystemProp() throws IllegalAccessException {
         Properties systemProperties = System.getProperties();
         for (final Map.Entry<Object, Object> prop : systemProperties.entrySet()) {
             String key = prop.getKey().toString();
@@ -206,34 +188,6 @@ public class SnifferConfigInitializer {
                 String realKey = key.substring(ENV_KEY_PREFIX.length());
                 AGENT_SETTINGS.put(realKey, prop.getValue());
             }
-        }
-    }
-
-    /**
-     * Set agent version(Described in MANIFEST.MF)
-     */
-    private static void setAgentVersion() {
-        try {
-            Enumeration<URL> resources = SnifferConfigInitializer.class.getClassLoader().getResources(JarFile.MANIFEST_NAME);
-            while (resources.hasMoreElements()) {
-                URL url = resources.nextElement();
-                LOGGER.info("SnifferConfigInitializer url:{}", url.toString());
-                try (InputStream is = url.openStream()) {
-                    if (is != null) {
-                        Manifest manifest = new Manifest(is);
-                        Attributes mainAttribs = manifest.getMainAttributes();
-                        String projectName = mainAttribs.getValue("Implementation-Vendor-Id");
-                        if (projectName != null) {
-                            if ("org.apache.skywalking".equals(projectName)) {
-                                Config.Agent.VERSION = mainAttribs.getValue("Implementation-Version");
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.warn("Can't read version from MANIFEST.MF in the agent jar");
         }
     }
 

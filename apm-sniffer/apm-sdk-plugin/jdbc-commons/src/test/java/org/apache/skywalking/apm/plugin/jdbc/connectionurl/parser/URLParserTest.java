@@ -99,10 +99,10 @@ public class URLParserTest {
 
     @Test
     public void testParseOracleServiceName() {
-        ConnectionInfo connectionInfo = new URLParser().parser("jdbc:oracle:thin:@//localhost:1531/orcl");
+        ConnectionInfo connectionInfo = new URLParser().parser("jdbc:oracle:thin:@//localhost:1521/orcl");
         assertThat(connectionInfo.getDBType(), is("Oracle"));
         assertThat(connectionInfo.getDatabaseName(), is("orcl"));
-        assertThat(connectionInfo.getDatabasePeer(), is("localhost:1531"));
+        assertThat(connectionInfo.getDatabasePeer(), is("localhost:1521"));
     }
 
     @Test

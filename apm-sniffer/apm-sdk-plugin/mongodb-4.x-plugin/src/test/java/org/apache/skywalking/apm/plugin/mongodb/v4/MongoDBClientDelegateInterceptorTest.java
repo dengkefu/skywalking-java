@@ -18,7 +18,6 @@
 
 package org.apache.skywalking.apm.plugin.mongodb.v4;
 
-import static org.mockito.Mockito.when;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedInstance;
 import org.apache.skywalking.apm.plugin.mongodb.v4.interceptor.MongoDBClientDelegateInterceptor;
 import org.junit.Assert;
@@ -26,9 +25,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(MockitoJUnitRunner.class)
+import static org.mockito.Mockito.when;
+
+@RunWith(PowerMockRunner.class)
 public class MongoDBClientDelegateInterceptorTest {
 
     private MongoDBClientDelegateInterceptor interceptor;

@@ -18,9 +18,6 @@
 
 package org.apache.skywalking.apm.plugin.cassandra.java.driver.v3;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractTracingSpan;
 import org.apache.skywalking.apm.agent.core.context.trace.SpanLayer;
@@ -37,17 +34,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
-@RunWith(TracingSegmentRunner.class)
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.powermock.api.mockito.PowerMockito.when;
+
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
 public class DefaultResultSetFutureGetUninterruptiblyInterceptorTest {
 
     @Rule
     public AgentServiceRule serviceRule = new AgentServiceRule();
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
-
     @SegmentStoragePoint
     private SegmentStorage segmentStorage;
 
@@ -74,7 +73,7 @@ public class DefaultResultSetFutureGetUninterruptiblyInterceptorTest {
         assertThat(SegmentHelper.getSpans(segment).size(), is(1));
         AbstractTracingSpan span = SegmentHelper.getSpans(segment).get(0);
         SpanAssert.assertLayer(span, SpanLayer.DB);
-        assertThat(span.getOperationName(), is(Constants.CASSANDRA_OP_PREFIX + "executeAsync"));
+        assertThat(span.getOperationName(), is(Constants.CASSANDRA_OP_PREFIX));
         SpanAssert.assertTag(span, 0, Constants.CASSANDRA_DB_TYPE);
     }
 }

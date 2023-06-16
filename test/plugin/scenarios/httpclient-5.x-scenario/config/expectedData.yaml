@@ -32,7 +32,6 @@ segmentItems:
             tags:
               - {key: url, value: 'http://127.0.0.1:8080/httpclient-5.x/back'}
               - {key: http.method, value: GET}
-              - {key: http.status_code, value: '200'}
             refs:
               - {parentEndpoint: httpasyncclient/local, networkAddress: '127.0.0.1:8080',
                 refType: CrossProcess, parentSpanId: 1, parentTraceSegmentId: not null, parentServiceInstance: not
@@ -53,7 +52,6 @@ segmentItems:
             tags:
               - {key: url, value: 'http://127.0.0.1:8080/httpclient-5.x/back'}
               - {key: http.method, value: GET}
-              - {key: http.status_code, value: '200'}
             skipAnalysis: 'false'
           - operationName: httpasyncclient/local
             parentSpanId: -1
@@ -85,7 +83,6 @@ segmentItems:
             tags:
               - {key: url, value: 'http://127.0.0.1:8080/httpclient-5.x/case/asyncGet'}
               - {key: http.method, value: GET}
-              - {key: http.status_code, value: '200'}
             refs:
               - {parentEndpoint: GET:/httpclient-5.x/case/get, networkAddress: '127.0.0.1:8080',
                 refType: CrossProcess, parentSpanId: 1, parentTraceSegmentId: not null, parentServiceInstance: not
@@ -106,7 +103,6 @@ segmentItems:
             tags:
               - {key: url, value: 'http://127.0.0.1:8080/httpclient-5.x/case/asyncGet'}
               - {key: http.method, value: GET}
-              - {key: http.status_code, value: '200'}
             skipAnalysis: 'false'
           - operationName: GET:/httpclient-5.x/case/get
             parentSpanId: -1
@@ -121,5 +117,4 @@ segmentItems:
             tags:
               - {key: url, value: 'http://127.0.0.1:8080/httpclient-5.x/case/get'}
               - {key: http.method, value: GET}
-              - {key: http.status_code, value: '200'}
             skipAnalysis: 'false'

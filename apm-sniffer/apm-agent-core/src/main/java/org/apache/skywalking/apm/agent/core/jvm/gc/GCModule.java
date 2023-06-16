@@ -18,12 +18,11 @@
 
 package org.apache.skywalking.apm.agent.core.jvm.gc;
 
-import org.apache.skywalking.apm.network.language.agent.v3.GC;
-import org.apache.skywalking.apm.network.language.agent.v3.GCPhase;
-
 import java.lang.management.GarbageCollectorMXBean;
 import java.util.LinkedList;
 import java.util.List;
+import org.apache.skywalking.apm.network.language.agent.v3.GC;
+import org.apache.skywalking.apm.network.language.agent.v3.GCPhase;
 
 public abstract class GCModule implements GCMetricAccessor {
     private List<GarbageCollectorMXBean> beans;
@@ -32,6 +31,8 @@ public abstract class GCModule implements GCMetricAccessor {
     private long lastYGCCount = 0;
     private long lastOGCCollectionTime = 0;
     private long lastYGCCollectionTime = 0;
+    private long lastNormalGCCount = 0;
+    private long lastNormalGCTime = 0;
 
     public GCModule(List<GarbageCollectorMXBean> beans) {
         this.beans = beans;
@@ -63,6 +64,15 @@ public abstract class GCModule implements GCMetricAccessor {
                 long time = bean.getCollectionTime();
                 gcTime = time - lastOGCCollectionTime;
                 lastOGCCollectionTime = time;
+            } else if (name.equals(getNormalGCName())) {
+                phase = GCPhase.NORMAL;
+                long collectionCount = bean.getCollectionCount();
+                gcCount = collectionCount - lastNormalGCCount;
+                lastNormalGCCount = collectionCount;
+
+                long time = bean.getCollectionTime();
+                gcTime = time - lastNormalGCTime;
+                lastNormalGCTime = time;
             } else {
                 continue;
             }
@@ -77,4 +87,5 @@ public abstract class GCModule implements GCMetricAccessor {
 
     protected abstract String getNewGCName();
 
+    protected abstract String getNormalGCName();
 }

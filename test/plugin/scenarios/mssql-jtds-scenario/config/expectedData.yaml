@@ -19,11 +19,11 @@ segmentItems:
     segments:
       - segmentId: not null
         spans:
-          - operationName: Mssql/JDBC/PreparedStatement/execute
+          - operationName: Mssql/JDBI/PreparedStatement/execute
             parentSpanId: 0
             spanId: 1
             tags:
-              - {key: db.type, value: Mssql}
+              - {key: db.type, value: sql}
               - {key: db.instance, value: tempdb}
               - key: db.statement
                 value: "CREATE TABLE test_007(\nid VARCHAR(1) PRIMARY KEY, \nvalue VARCHAR(1)\
@@ -37,11 +37,11 @@ segmentItems:
             componentId: 104
             peer: mssql-server:1433
             skipAnalysis: 'false'
-          - operationName: Mssql/JDBC/PreparedStatement/execute
+          - operationName: Mssql/JDBI/PreparedStatement/execute
             parentSpanId: 0
             spanId: 2
             tags:
-              - {key: db.type, value: Mssql}
+              - {key: db.type, value: sql}
               - {key: db.instance, value: tempdb}
               - {key: db.statement, value: 'INSERT INTO test_007(id, value) VALUES(?,?)'}
             logs: []
@@ -53,11 +53,11 @@ segmentItems:
             componentId: 104
             peer: mssql-server:1433
             skipAnalysis: 'false'
-          - operationName: Mssql/JDBC/Statement/execute
+          - operationName: Mssql/JDBI/Statement/execute
             parentSpanId: 0
             spanId: 3
             tags:
-              - {key: db.type, value: Mssql}
+              - {key: db.type, value: sql}
               - {key: db.instance, value: tempdb}
               - {key: db.statement, value: DROP table test_007}
             logs: []
@@ -69,11 +69,11 @@ segmentItems:
             componentId: 104
             peer: mssql-server:1433
             skipAnalysis: 'false'
-          - operationName: Mssql/JDBC/Connection/close
+          - operationName: Mssql/JDBI/Connection/close
             parentSpanId: 0
             spanId: 4
             tags:
-              - {key: db.type, value: Mssql}
+              - {key: db.type, value: sql}
               - {key: db.instance, value: tempdb}
               - {key: db.statement, value: ''}
             logs: []
@@ -97,6 +97,5 @@ segmentItems:
             tags:
               - {key: url, value: 'http://localhost:8080/mssql-jtds-scenario/case/mssql-jtds-scenario'}
               - {key: http.method, value: GET}
-              - {key: http.status_code, value: '200'}
             logs: []
             skipAnalysis: 'false'

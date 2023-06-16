@@ -21,7 +21,6 @@ package org.apache.skywalking.apm.agent.core.remote;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.stub.StreamObserver;
 import io.grpc.testing.GrpcServerRule;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.skywalking.apm.agent.core.boot.ServiceManager;
@@ -30,7 +29,6 @@ import org.apache.skywalking.apm.agent.core.context.ContextManager;
 import org.apache.skywalking.apm.agent.core.context.tag.Tags;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractSpan;
 import org.apache.skywalking.apm.agent.core.context.trace.SpanLayer;
-import org.apache.skywalking.apm.agent.core.context.util.FieldGetter;
 import org.apache.skywalking.apm.agent.core.test.tools.AgentServiceRule;
 import org.apache.skywalking.apm.agent.core.test.tools.SegmentStorage;
 import org.apache.skywalking.apm.agent.core.test.tools.SegmentStoragePoint;
@@ -47,6 +45,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.powermock.reflect.Whitebox;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -102,17 +101,12 @@ public class TraceSegmentServiceClientTest {
 
     @Before
     public void setUp() throws Throwable {
-        Field reconnect = GRPCChannelManager.class.getDeclaredField("reconnect");
-        reconnect.setAccessible(true);
-        reconnect.setBoolean(ServiceManager.INSTANCE.findService(GRPCChannelManager.class), false);
+        Whitebox.setInternalState(ServiceManager.INSTANCE.findService(GRPCChannelManager.class), "reconnect", false);
         spy(serviceClient);
 
-        Field serviceStub = TraceSegmentServiceClient.class.getDeclaredField("serviceStub");
-        Field status = TraceSegmentServiceClient.class.getDeclaredField("status");
-        serviceStub.setAccessible(true);
-        status.setAccessible(true);
-        serviceStub.set(serviceClient, TraceSegmentReportServiceGrpc.newStub(grpcServerRule.getChannel()));
-        status.set(serviceClient, GRPCChannelStatus.CONNECTED);
+        Whitebox.setInternalState(
+            serviceClient, "serviceStub", TraceSegmentReportServiceGrpc.newStub(grpcServerRule.getChannel()));
+        Whitebox.setInternalState(serviceClient, "status", GRPCChannelStatus.CONNECTED);
 
         upstreamSegments = new ArrayList<>();
     }
@@ -142,7 +136,7 @@ public class TraceSegmentServiceClientTest {
     }
 
     @Test
-    public void testSendTraceSegmentWithException() throws InvalidProtocolBufferException, IllegalAccessException, NoSuchFieldException {
+    public void testSendTraceSegmentWithException() throws InvalidProtocolBufferException {
         grpcServerRule.getServiceRegistry().addService(serviceImplBase);
 
         AbstractSpan firstEntrySpan = ContextManager.createEntrySpan("/testFirstEntry", null);
@@ -156,7 +150,7 @@ public class TraceSegmentServiceClientTest {
 
         assertThat(upstreamSegments.size(), is(0));
 
-        boolean reconnect = FieldGetter.getValue(
+        boolean reconnect = Whitebox.getInternalState(
             ServiceManager.INSTANCE.findService(GRPCChannelManager.class), "reconnect");
         assertThat(reconnect, is(true));
 

@@ -18,20 +18,11 @@
 
 package org.apache.skywalking.apm.plugin.ehcache.v2;
 
-import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.CACHE_NAME_ENHANCE_METHOD;
-import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.GET_ALL_CACHE_ENHANCE_METHOD;
-import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.GET_CACHE_ENHANCE_METHOD;
-import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.PUT_CACHE_ENHANCE_METHOD;
-import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.READ_LOCK_RELEASE_ENHANCE_METHOD;
-import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.READ_LOCK_TRY_ENHANCE_METHOD;
-import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.WRITE_LOCK_RELEASE_ENHANCE_METHOD;
-import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.WRITE_LOCK_TRY_ENHANCE_METHOD;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.List;
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.Element;
+import net.sf.ehcache.config.CacheConfiguration;
 import org.apache.skywalking.apm.agent.core.context.trace.TraceSegment;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedInstance;
 import org.apache.skywalking.apm.agent.test.tools.AgentServiceRule;
@@ -43,13 +34,23 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.config.CacheConfiguration;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
+import org.powermock.reflect.Whitebox;
 
-@RunWith(TracingSegmentRunner.class)
+import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.GET_ALL_CACHE_ENHANCE_METHOD;
+import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.GET_CACHE_ENHANCE_METHOD;
+import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.PUT_CACHE_ENHANCE_METHOD;
+import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.READ_LOCK_RELEASE_ENHANCE_METHOD;
+import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.READ_LOCK_TRY_ENHANCE_METHOD;
+import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.WRITE_LOCK_RELEASE_ENHANCE_METHOD;
+import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.WRITE_LOCK_TRY_ENHANCE_METHOD;
+import static org.apache.skywalking.apm.plugin.ehcache.v2.define.EhcachePluginInstrumentation.CACHE_NAME_ENHANCE_METHOD;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
 public class EhcacheInterceptorTest {
 
     private static final String CACHE_NAME = "test";
@@ -59,8 +60,6 @@ public class EhcacheInterceptorTest {
 
     @Rule
     public AgentServiceRule serviceRule = new AgentServiceRule();
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     private EhcacheOperateObjectInterceptor operateObjectInterceptor;
     private EhcacheOperateElementInterceptor operateElementInterceptor;
@@ -123,16 +122,16 @@ public class EhcacheInterceptorTest {
         releaseLockArguments = new Object[] {"dataKey"};
         cacheNameArguments = new Object[] {"cacheName"};
 
-        putCacheMethod = Cache.class.getDeclaredMethod(PUT_CACHE_ENHANCE_METHOD, Element.class);
-        getCacheMethod = Cache.class.getDeclaredMethod(GET_CACHE_ENHANCE_METHOD, Serializable.class);
-        getAllMethod = Cache.class.getDeclaredMethod(GET_ALL_CACHE_ENHANCE_METHOD, Collection.class);
+        putCacheMethod = Whitebox.getMethods(Cache.class, PUT_CACHE_ENHANCE_METHOD)[0];
+        getCacheMethod = Whitebox.getMethods(Cache.class, GET_CACHE_ENHANCE_METHOD)[0];
+        getAllMethod = Whitebox.getMethods(Cache.class, GET_ALL_CACHE_ENHANCE_METHOD)[0];
 
-        tryReadLockMethod = Cache.class.getDeclaredMethod(READ_LOCK_TRY_ENHANCE_METHOD, Object.class, long.class);
-        tryWriteLockMethod = Cache.class.getDeclaredMethod(WRITE_LOCK_TRY_ENHANCE_METHOD, Object.class, long.class);
-        releaseReadLockMethod = Cache.class.getDeclaredMethod(READ_LOCK_RELEASE_ENHANCE_METHOD, Object.class);
-        releaseWriteLockMethod = Cache.class.getDeclaredMethod(WRITE_LOCK_RELEASE_ENHANCE_METHOD, Object.class);
+        tryReadLockMethod = Whitebox.getMethods(Cache.class, READ_LOCK_TRY_ENHANCE_METHOD)[0];
+        tryWriteLockMethod = Whitebox.getMethods(Cache.class, WRITE_LOCK_TRY_ENHANCE_METHOD)[0];
+        releaseReadLockMethod = Whitebox.getMethods(Cache.class, READ_LOCK_RELEASE_ENHANCE_METHOD)[0];
+        releaseWriteLockMethod = Whitebox.getMethods(Cache.class, WRITE_LOCK_RELEASE_ENHANCE_METHOD)[0];
 
-        setNameMethod = Cache.class.getDeclaredMethod(CACHE_NAME_ENHANCE_METHOD, String.class);
+        setNameMethod = Whitebox.getMethods(Cache.class, CACHE_NAME_ENHANCE_METHOD)[0];
 
         enhancedInstance.setSkyWalkingDynamicField(new EhcacheEnhanceInfo(CACHE_NAME));
     }

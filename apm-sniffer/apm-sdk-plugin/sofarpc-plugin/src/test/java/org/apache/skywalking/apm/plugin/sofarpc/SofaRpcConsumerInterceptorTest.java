@@ -18,11 +18,11 @@
 
 package org.apache.skywalking.apm.plugin.sofarpc;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
+import com.alipay.sofa.rpc.client.ProviderInfo;
+import com.alipay.sofa.rpc.context.RpcInternalContext;
+import com.alipay.sofa.rpc.core.request.SofaRequest;
+import com.alipay.sofa.rpc.core.response.SofaResponse;
+import com.alipay.sofa.rpc.filter.ConsumerInvoker;
 import java.util.List;
 import org.apache.skywalking.apm.agent.core.conf.Config;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractTracingSpan;
@@ -39,35 +39,36 @@ import org.apache.skywalking.apm.agent.test.tools.SegmentStorage;
 import org.apache.skywalking.apm.agent.test.tools.SegmentStoragePoint;
 import org.apache.skywalking.apm.agent.test.tools.TracingSegmentRunner;
 import org.hamcrest.CoreMatchers;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import com.alipay.sofa.rpc.client.ProviderInfo;
-import com.alipay.sofa.rpc.context.RpcInternalContext;
-import com.alipay.sofa.rpc.core.request.SofaRequest;
-import com.alipay.sofa.rpc.core.response.SofaResponse;
-import com.alipay.sofa.rpc.filter.ConsumerInvoker;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
-@RunWith(TracingSegmentRunner.class)
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.powermock.api.mockito.PowerMockito.when;
+
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
+@PrepareForTest({
+    RpcInternalContext.class,
+    SofaRequest.class,
+    SofaResponse.class
+})
 public class SofaRpcConsumerInterceptorTest {
-
-    private static MockedStatic<RpcInternalContext> MOCKED_STATIC;
 
     @SegmentStoragePoint
     private SegmentStorage segmentStorage;
 
     @Rule
     public AgentServiceRule agentServiceRule = new AgentServiceRule();
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     @Mock
     private EnhancedInstance enhancedInstance;
@@ -80,35 +81,26 @@ public class SofaRpcConsumerInterceptorTest {
     @Mock
     private ConsumerInvoker invoker;
 
-    @Mock
-    private SofaRequest sofaRequest;
+    private SofaRequest sofaRequest = PowerMockito.mock(SofaRequest.class);
     @Mock
     private MethodInterceptResult methodInterceptResult;
-    @Mock
-    private SofaResponse sofaResponse;
+
+    private SofaResponse sofaResponse = PowerMockito.mock(SofaResponse.class);
 
     private Object[] allArguments;
     private Class[] argumentTypes;
-
-    @BeforeClass
-    public static void beforeClass() {
-        MOCKED_STATIC = Mockito.mockStatic(RpcInternalContext.class);
-    }
-
-    @AfterClass
-    public static void afterClass() {
-        MOCKED_STATIC.close();
-    }
 
     @Before
     public void setUp() throws Exception {
         sofaRpcConsumerInterceptor = new SofaRpcConsumerInterceptor();
 
+        PowerMockito.mockStatic(RpcInternalContext.class);
+
         when(sofaRequest.getMethodName()).thenReturn("test");
         when(sofaRequest.getMethodArgSigs()).thenReturn(new String[] {"String"});
         when(sofaRequest.getMethodArgs()).thenReturn(new Object[] {"abc"});
         when(sofaRequest.getInterfaceName()).thenReturn("org.apache.skywalking.apm.test.TestSofaRpcService");
-        MOCKED_STATIC.when(RpcInternalContext::getContext).thenReturn(rpcContext);
+        PowerMockito.when(RpcInternalContext.getContext()).thenReturn(rpcContext);
         when(rpcContext.isConsumerSide()).thenReturn(true);
         final ProviderInfo providerInfo = new ProviderInfo();
         providerInfo.setHost("127.0.0.1");

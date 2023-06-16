@@ -19,7 +19,7 @@ segmentItems:
   segments:
     - segmentId: not null
       spans:
-      - operationName: Mysql/JDBC/PreparedStatement/execute
+      - operationName: Mysql/JDBI/PreparedStatement/execute
         parentSpanId: 1
         spanId: 2
         spanLayer: Database
@@ -31,7 +31,7 @@ segmentItems:
         peer: mysql:3306
         skipAnalysis: 'false'
         tags:
-        - {key: db.type, value: Mysql}
+        - {key: db.type, value: sql}
         - {key: db.instance, value: ''}
         - {key: db.statement, value: 'insert into test.table_demo (name) values (?)'}
       - operationName: org.apache.ibatis.session.defaults.DefaultSqlSession.insert(java.lang.String,java.lang.Object)
@@ -47,7 +47,7 @@ segmentItems:
         skipAnalysis: 'false'
         tags:
         - {key: mybatis.mapper, value: test.apache.skywalking.apm.testcase.mybatis.mapper.DemoMapper.insert}
-      - operationName: Mysql/JDBC/Connection/close
+      - operationName: Mysql/JDBI/Connection/close
         parentSpanId: 0
         spanId: 3
         spanLayer: Database
@@ -59,10 +59,10 @@ segmentItems:
         peer: mysql:3306
         skipAnalysis: 'false'
         tags:
-          - {key: db.type, value: Mysql}
+          - {key: db.type, value: sql}
           - {key: db.instance, value: ''}
           - {key: db.statement, value: ''}
-      - operationName: Mysql/JDBC/PreparedStatement/execute
+      - operationName: Mysql/JDBI/PreparedStatement/execute
         parentSpanId: 4
         spanId: 5
         spanLayer: Database
@@ -74,7 +74,7 @@ segmentItems:
         peer: mysql:3306
         skipAnalysis: 'false'
         tags:
-        - {key: db.type, value: Mysql}
+        - {key: db.type, value: sql}
         - {key: db.instance, value: ''}
         - {key: db.statement, value: 'insert into test.table_demo (name) values (?)'}
       - operationName: org.apache.ibatis.session.defaults.DefaultSqlSession.insert(java.lang.String,java.lang.Object)
@@ -90,7 +90,7 @@ segmentItems:
         skipAnalysis: 'false'
         tags:
         - {key: mybatis.mapper, value: test.apache.skywalking.apm.testcase.mybatis.mapper.DemoMapper.insert}
-      - operationName: Mysql/JDBC/Connection/close
+      - operationName: Mysql/JDBI/Connection/close
         parentSpanId: 0
         spanId: 6
         spanLayer: Database
@@ -102,7 +102,7 @@ segmentItems:
         peer: mysql:3306
         skipAnalysis: 'false'
         tags:
-        - {key: db.type, value: Mysql}
+        - {key: db.type, value: sql}
         - {key: db.instance, value: ''}
         - {key: db.statement, value: ''}
       - operationName: GET:/case/mybatis-case
@@ -119,4 +119,3 @@ segmentItems:
         tags:
         - {key: url, value: 'http://localhost:8080/mybatis-3.x-scenario/case/mybatis-case'}
         - {key: http.method, value: GET}
-        - {key: http.status_code, value: '200'}

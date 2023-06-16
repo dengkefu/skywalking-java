@@ -38,14 +38,6 @@ public class SkyWalkingContext {
         return traceId;
     }
 
-    public String getTraceSegmentId() {
-        return traceSegmentId;
-    }
-
-    public int getSpanId() {
-        return spanId;
-    }
-
     @Override
     public String toString() {
         if (-1 == spanId) {

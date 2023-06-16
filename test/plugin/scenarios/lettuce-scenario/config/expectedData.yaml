@@ -33,7 +33,6 @@ segmentItems:
             tags:
               - {key: url, value: 'http://localhost:8080/lettuce-scenario/case/healthCheck'}
               - {key: http.method, value: HEAD}
-              - {key: http.status_code, value: '200'}
       - segmentId: not null
         spans:
           - operationName: Lettuce/GET
@@ -48,10 +47,8 @@ segmentItems:
             peer: not null
             skipAnalysis: false
             tags:
-              - {key: cache.type, value: Redis}
-              - {key: cache.key, value: key}
-              - {key: cache.cmd, value: GET}
-              - {key: cache.op, value: read}
+              - {key: db.type, value: Redis}
+              - {key: db.statement, value: GET key<key>}
           - operationName: Lettuce/SET
             parentSpanId: 0
             spanId: 2
@@ -64,10 +61,8 @@ segmentItems:
             peer: not null
             skipAnalysis: false
             tags:
-              - { key: cache.type, value: Redis }
-              - { key: cache.key, value: key0 }
-              - { key: cache.cmd, value: SET }
-              - { key: cache.op, value: write }
+              - {key: db.type, value: Redis}
+              - {key: db.statement, value: SET key<key0> value<value0>}
           - operationName: Lettuce/SET
             parentSpanId: 0
             spanId: 3
@@ -80,10 +75,8 @@ segmentItems:
             peer: not null
             skipAnalysis: false
             tags:
-              - { key: cache.type, value: Redis }
-              - { key: cache.key, value: key1 }
-              - { key: cache.cmd, value: SET }
-              - { key: cache.op, value: write }
+              - {key: db.type, value: Redis}
+              - {key: db.statement, value: SET key<key1> value<value1>}
           - operationName: GET:/lettuce-scenario/case/lettuce-case
             parentSpanId: -1
             spanId: 0
@@ -98,4 +91,3 @@ segmentItems:
             tags:
               - {key: url, value: 'http://localhost:8080/lettuce-scenario/case/lettuce-case'}
               - {key: http.method, value: GET}
-              - {key: http.status_code, value: '200'}

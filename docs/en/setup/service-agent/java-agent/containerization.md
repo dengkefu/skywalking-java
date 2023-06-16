@@ -21,11 +21,7 @@ enable SkyWalking agent, it should be adopted automatically.
 
 ## Kubernetes
 
-Currently, SkyWalking provides two ways to install the java agent on your services on Kubernetes.
-
-1. To use the java agent more natively, you can try the [java agent injector](https://github.com/apache/skywalking-swck/blob/master/docs/java-agent-injector.md) to inject the java agent image as a sidecar.
-
-2. If you think it's hard to install the injector, you can also use this java agent image as a sidecar as below.
+In Kubernetes scenarios, you can also use this agent image as a sidecar.
 
 ```yaml
 apiVersion: v1

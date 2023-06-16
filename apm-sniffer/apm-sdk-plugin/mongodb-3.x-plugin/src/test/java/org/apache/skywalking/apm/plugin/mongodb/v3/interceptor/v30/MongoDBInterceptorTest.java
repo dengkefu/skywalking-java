@@ -18,10 +18,9 @@
 
 package org.apache.skywalking.apm.plugin.mongodb.v3.interceptor.v30;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.mongodb.Mongo;
+import com.mongodb.MongoNamespace;
+import com.mongodb.operation.FindOperation;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractTracingSpan;
@@ -48,13 +47,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import com.mongodb.Mongo;
-import com.mongodb.MongoNamespace;
-import com.mongodb.operation.FindOperation;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
-@RunWith(TracingSegmentRunner.class)
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
+
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
 public class MongoDBInterceptorTest {
 
     @SegmentStoragePoint
@@ -62,8 +64,6 @@ public class MongoDBInterceptorTest {
 
     @Rule
     public AgentServiceRule serviceRule = new AgentServiceRule();
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     private MongoDBInterceptor interceptor;
 
@@ -89,7 +89,7 @@ public class MongoDBInterceptorTest {
         BsonDocument document = new BsonDocument();
         document.append("name", new BsonString("by"));
         MongoNamespace mongoNamespace = new MongoNamespace("test.user");
-        Decoder decoder = mock(Decoder.class);
+        Decoder decoder = PowerMockito.mock(Decoder.class);
         FindOperation findOperation = new FindOperation(mongoNamespace, decoder);
         findOperation.filter(document);
 

@@ -19,7 +19,7 @@ segmentItems:
   segments:
   - segmentId: not null
     spans:
-    - operationName: Mariadb/JDBC/Statement/execute
+    - operationName: Mariadb/JDBI/Statement/execute
       parentSpanId: 0
       spanId: 1
       spanLayer: Database
@@ -31,12 +31,12 @@ segmentItems:
       peer: mariadb-server:3306
       skipAnalysis: 'false'
       tags:
-      - {key: db.type, value: Mariadb}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: test}
       - key: db.statement
         value: "CREATE TABLE test_table(\nid VARCHAR(1) PRIMARY KEY, \nvalue VARCHAR(10)\
           \ NOT NULL)"
-    - operationName: Mariadb/JDBC/PreparedStatement/execute
+    - operationName: Mariadb/JDBI/PreparedStatement/execute
       parentSpanId: 0
       spanId: 2
       spanLayer: Database
@@ -48,10 +48,10 @@ segmentItems:
       peer: mariadb-server:3306
       skipAnalysis: 'false'
       tags:
-      - {key: db.type, value: Mariadb}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: test}
       - {key: db.statement, value: "INSERT INTO test_table(id, value) VALUES(?,?)"}
-    - operationName: Mariadb/JDBC/PreparedStatement/execute
+    - operationName: Mariadb/JDBI/PreparedStatement/execute
       parentSpanId: 0
       spanId: 3
       spanLayer: Database
@@ -63,10 +63,10 @@ segmentItems:
       peer: mariadb-server:3306
       skipAnalysis: 'false'
       tags:
-      - {key: db.type, value: Mariadb}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: test}
       - {key: db.statement, value: "SELECT id, value FROM test_table WHERE id = ?"}
-    - operationName: Mariadb/JDBC/Statement/execute
+    - operationName: Mariadb/JDBI/Statement/execute
       parentSpanId: 0
       spanId: 4
       spanLayer: Database
@@ -78,10 +78,10 @@ segmentItems:
       peer: mariadb-server:3306
       skipAnalysis: 'false'
       tags:
-      - {key: db.type, value: Mariadb}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: test}
       - {key: db.statement, value: "DROP table test_table"}
-    - operationName: Mariadb/JDBC/Connection/close
+    - operationName: Mariadb/JDBI/Connection/close
       parentSpanId: 0
       spanId: 5
       spanLayer: Database
@@ -93,7 +93,7 @@ segmentItems:
       peer: mariadb-server:3306
       skipAnalysis: 'false'
       tags:
-      - {key: db.type, value: Mariadb}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: test}
       - {key: db.statement, value: ''}
     - operationName: GET:/mariadb-scenario/case/mariadb-scenario
@@ -109,6 +109,5 @@ segmentItems:
       tags:
       - {key: url, value: 'http://localhost:8080/mariadb-scenario/case/mariadb-scenario'}
       - {key: http.method, value: GET}
-      - {key: http.status_code, value: '200'}
       logs: []
       skipAnalysis: 'false'

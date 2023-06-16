@@ -73,9 +73,7 @@ public class FileWriter implements IWriter {
                                  writeToFile(log + Constants.LINE_SEPARATOR);
                              }
                              try {
-                                 if (fileOutputStream != null) {
-                                     fileOutputStream.flush();
-                                 }
+                                 fileOutputStream.flush();
                              } catch (IOException e) {
                                  e.printStackTrace();
                              }

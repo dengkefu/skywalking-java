@@ -22,7 +22,6 @@ header:
     copyright-owner: Apache Software Foundation
 
   paths-ignore:
-    - 'org.mockito.plugins.MockMaker'
     - '.github/PULL_REQUEST_TEMPLATE'
     - '**/.gitignore'
     - '.gitmodules'

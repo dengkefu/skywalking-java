@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.apache.skywalking.apm.agent.core.conf.Config;
-import org.apache.skywalking.apm.agent.core.version.Version;
 import org.apache.skywalking.apm.network.common.v3.KeyStringValuePair;
 import org.apache.skywalking.apm.util.StringUtil;
 
@@ -35,19 +34,18 @@ public class InstanceJsonPropertiesUtil {
         List<KeyStringValuePair> properties = new ArrayList<>();
 
         if (StringUtil.isNotEmpty(Config.Agent.INSTANCE_PROPERTIES_JSON)) {
-            Map<String, String> json = GSON.fromJson(
-                Config.Agent.INSTANCE_PROPERTIES_JSON,
-                new TypeToken<Map<String, String>>() {
-                }.getType()
-            );
-            json.forEach(
-                (key, val) -> properties.add(KeyStringValuePair.newBuilder().setKey(key).setValue(val).build()));
+            Config.Agent.INSTANCE_PROPERTIES.putAll(
+                GSON.fromJson(
+                    Config.Agent.INSTANCE_PROPERTIES_JSON,
+                    new TypeToken<Map<String, Object>>() {
+                    }.getType()
+                ));
         }
 
-        properties.add(KeyStringValuePair.newBuilder().setKey("namespace").setValue(Config.Agent.NAMESPACE).build());
-        properties.add(KeyStringValuePair.newBuilder().setKey("cluster").setValue(Config.Agent.CLUSTER).build());
-        properties.add(KeyStringValuePair.newBuilder().setKey("version").setValue(Version.CURRENT.toString()).build());
-
+        Config.Agent.INSTANCE_PROPERTIES.forEach((key, val) -> properties.add(KeyStringValuePair.newBuilder()
+                                                                                                .setKey(key)
+                                                                                                .setValue(val)
+                                                                                                .build()));
         return properties;
     }
 }

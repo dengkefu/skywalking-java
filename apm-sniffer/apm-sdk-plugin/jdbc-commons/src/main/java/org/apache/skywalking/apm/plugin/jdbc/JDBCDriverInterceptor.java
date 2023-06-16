@@ -20,9 +20,6 @@ package org.apache.skywalking.apm.plugin.jdbc;
 
 import java.lang.reflect.Method;
 import java.sql.Connection;
-
-import org.apache.skywalking.apm.agent.core.boot.ServiceManager;
-import org.apache.skywalking.apm.agent.core.conf.dynamic.ConfigurationDiscoveryService;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedInstance;
 import org.apache.skywalking.apm.plugin.jdbc.connectionurl.parser.URLParser;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstanceMethodsAroundInterceptor;
@@ -37,10 +34,7 @@ public class JDBCDriverInterceptor implements InstanceMethodsAroundInterceptor {
     @Override
     public void beforeMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes,
         MethodInterceptResult result) throws Throwable {
-        TraceSqlParametersWatcher traceSqlParametersWatcher = new TraceSqlParametersWatcher("plugin.jdbc.trace_sql_parameters");
-        ConfigurationDiscoveryService configurationDiscoveryService = ServiceManager.INSTANCE.findService(
-                ConfigurationDiscoveryService.class);
-        configurationDiscoveryService.registerAgentConfigChangeWatcher(traceSqlParametersWatcher);
+
     }
 
     @Override

@@ -19,14 +19,10 @@
 package org.apache.skywalking.apm.plugin.jdbc.trace;
 
 import java.sql.SQLException;
-import java.util.Objects;
-import org.apache.skywalking.apm.agent.core.context.ContextManager;
 import org.apache.skywalking.apm.agent.core.context.tag.Tags;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractSpan;
 import org.apache.skywalking.apm.agent.core.context.trace.SpanLayer;
-import org.apache.skywalking.apm.plugin.jdbc.JDBCPluginConfig;
-import org.apache.skywalking.apm.plugin.jdbc.PreparedStatementParameterBuilder;
-import org.apache.skywalking.apm.plugin.jdbc.define.StatementEnhanceInfos;
+import org.apache.skywalking.apm.agent.core.context.ContextManager;
 
 /**
  * {@link PreparedStatementTracing} create an exit span when the client call the method in the class that extend {@link
@@ -35,23 +31,16 @@ import org.apache.skywalking.apm.plugin.jdbc.define.StatementEnhanceInfos;
 public class PreparedStatementTracing {
 
     public static <R> R execute(java.sql.PreparedStatement realStatement, ConnectionInfo connectInfo, String method,
-            String sql, Executable<R> exec, StatementEnhanceInfos statementEnhanceInfos) throws SQLException {
-        final AbstractSpan span = ContextManager.createExitSpan(
-                connectInfo.getDBType() + "/JDBC/PreparedStatement/" + method, connectInfo
-                        .getDatabasePeer());
+        String sql, Executable<R> exec) throws SQLException {
+        final AbstractSpan span = ContextManager.createExitSpan(connectInfo.getDBType() + "/JDBI/PreparedStatement/" + method, connectInfo
+            .getDatabasePeer());
         try {
-            Tags.DB_TYPE.set(span, connectInfo.getDBType());
+            Tags.DB_TYPE.set(span, "sql");
             Tags.DB_INSTANCE.set(span, connectInfo.getDatabaseName());
             Tags.DB_STATEMENT.set(span, sql);
             span.setComponent(connectInfo.getComponent());
+
             SpanLayer.asDB(span);
-            if (JDBCPluginConfig.Plugin.JDBC.TRACE_SQL_PARAMETERS && Objects.nonNull(statementEnhanceInfos)) {
-                final Object[] parameters = statementEnhanceInfos.getParameters();
-                if (parameters != null && parameters.length > 0) {
-                    int maxIndex = statementEnhanceInfos.getMaxIndex();
-                    Tags.SQL_PARAMETERS.set(span, getParameterString(parameters, maxIndex));
-                }
-            }
             return exec.exe(realStatement, sql);
         } catch (SQLException e) {
             span.log(e);
@@ -61,15 +50,7 @@ public class PreparedStatementTracing {
         }
     }
 
-    private static String getParameterString(Object[] parameters, int maxIndex) {
-        return new PreparedStatementParameterBuilder()
-                .setParameters(parameters)
-                .setMaxIndex(maxIndex)
-                .build();
-    }
-
     public interface Executable<R> {
-
         R exe(java.sql.PreparedStatement realConnection, String sql) throws SQLException;
     }
 }

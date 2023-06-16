@@ -19,7 +19,7 @@ segmentItems:
   segments:
   - segmentId: not null
     spans:
-    - operationName: kylin/JDBC/Statement/execute
+    - operationName: kylin/JDBI/Statement/execute
       parentSpanId: 0
       spanId: 1
       spanLayer: Database
@@ -31,11 +31,11 @@ segmentItems:
       peer: kylin-server:7070
       skipAnalysis: 'false'
       tags:
-      - {key: db.type, value: kylin}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: learn_kylin}
       - key: db.statement
         value: "select * from KYLIN_ACCOUNT LIMIT 1"
-    - operationName: kylin/JDBC/PreparedStatement/executeQuery
+    - operationName: kylin/JDBI/PreparedStatement/executeQuery
       parentSpanId: 0
       spanId: 2
       spanLayer: Database
@@ -47,10 +47,10 @@ segmentItems:
       peer: kylin-server:7070
       skipAnalysis: 'false'
       tags:
-      - {key: db.type, value: kylin}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: learn_kylin}
       - {key: db.statement, value: "select * from KYLIN_ACCOUNT"}
-    - operationName: kylin/JDBC/Connection/close
+    - operationName: kylin/JDBI/Connection/close
       parentSpanId: 0
       spanId: 3
       spanLayer: Database
@@ -62,7 +62,7 @@ segmentItems:
       peer: kylin-server:7070
       skipAnalysis: 'false'
       tags:
-      - {key: db.type, value: kylin}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: learn_kylin}
       - {key: db.statement, value: ''}
     - operationName: HEAD:/kylin-jdbc-2.6.x-3.x-4.x-scenario/case/healthCheck
@@ -78,6 +78,5 @@ segmentItems:
       tags:
       - {key: url, value: 'http://localhost:8080/kylin-jdbc-2.6.x-3.x-4.x-scenario/case/healthCheck'}
       - {key: http.method, value: HEAD}
-      - {key: http.status_code, value: '200'}
       logs: []
       skipAnalysis: 'false'

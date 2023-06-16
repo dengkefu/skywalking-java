@@ -1,8 +1,14 @@
-# Trace Cross Thread
-These APIs provide ways to continuous tracing in the cross thread scenario with minimal code changes.
-All following are sample codes only to demonstrate how to adopt cross thread cases easier.
+# trace cross thread
+* Dependency the toolkit, such as using maven or gradle
+```xml
+   <dependency>
+      <groupId>org.apache.skywalking</groupId>
+      <artifactId>apm-toolkit-trace</artifactId>
+      <version>${skywalking.version}</version>
+   </dependency>
+```
 
-* Case 1.
+* usage 1.
 ```java
     @TraceCrossThread
     public static class MyCallable<String> implements Callable<String> {
@@ -15,7 +21,7 @@ All following are sample codes only to demonstrate how to adopt cross thread cas
     ExecutorService executorService = Executors.newFixedThreadPool(1);
     executorService.submit(new MyCallable());
 ```
-* Case 2.
+* usage 2.
 ```java
     ExecutorService executorService = Executors.newFixedThreadPool(1);
     executorService.submit(CallableWrapper.of(new Callable<String>() {
@@ -33,7 +39,7 @@ or
         }
     }));
 ```
-* Case 3.
+* usage 3.
 ```java
     @TraceCrossThread
     public class MySupplier<String> implements Supplier<String> {
@@ -51,7 +57,7 @@ or
             return "SupplierWrapper";
     })).thenAccept(System.out::println);
 ```
-* Case 4.
+* usage 4.
 ```java
     CompletableFuture.supplyAsync(SupplierWrapper.of(() -> {
         return "SupplierWrapper";
@@ -69,6 +75,7 @@ or
         return "FunctionWrapper";
     }));
 ```
+_Sample codes only_
 
 
 

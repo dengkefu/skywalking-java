@@ -90,28 +90,16 @@ public class ProfileTaskExecutionService implements BootService, TracingThreadLi
     /**
      * check and add {@link TracingContext} profiling
      */
-    public ProfileStatusContext addProfiling(TracingContext tracingContext,
-                                             String traceSegmentId,
-                                             String firstSpanOPName) {
+    public ProfileStatusReference addProfiling(TracingContext tracingContext,
+                                               String traceSegmentId,
+                                               String firstSpanOPName) {
         // get current profiling task, check need profiling
         final ProfileTaskExecutionContext executionContext = taskExecutionContext.get();
         if (executionContext == null) {
-            return ProfileStatusContext.createWithNone();
+            return ProfileStatusReference.createWithNone();
         }
 
         return executionContext.attemptProfiling(tracingContext, traceSegmentId, firstSpanOPName);
-    }
-
-    /**
-     * continue profiling task when cross-thread
-     */
-    public void continueProfiling(TracingContext tracingContext, String traceSegmentId) {
-        final ProfileTaskExecutionContext executionContext = taskExecutionContext.get();
-        if (executionContext == null) {
-            return;
-        }
-
-        executionContext.continueProfiling(tracingContext, traceSegmentId);
     }
 
     /**

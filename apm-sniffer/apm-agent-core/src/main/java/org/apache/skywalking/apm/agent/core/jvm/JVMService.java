@@ -25,7 +25,6 @@ import org.apache.skywalking.apm.agent.core.boot.BootService;
 import org.apache.skywalking.apm.agent.core.boot.DefaultImplementor;
 import org.apache.skywalking.apm.agent.core.boot.DefaultNamedThreadFactory;
 import org.apache.skywalking.apm.agent.core.boot.ServiceManager;
-import org.apache.skywalking.apm.agent.core.conf.Config;
 import org.apache.skywalking.apm.agent.core.jvm.clazz.ClassProvider;
 import org.apache.skywalking.apm.agent.core.jvm.cpu.CPUProvider;
 import org.apache.skywalking.apm.agent.core.jvm.gc.GCProvider;
@@ -48,7 +47,6 @@ public class JVMService implements BootService, Runnable {
     private volatile ScheduledFuture<?> collectMetricFuture;
     private volatile ScheduledFuture<?> sendMetricFuture;
     private JVMMetricsSender sender;
-    private volatile double cpuUsagePercent;
 
     @Override
     public void prepare() throws Throwable {
@@ -67,7 +65,7 @@ public class JVMService implements BootService, Runnable {
                                                    LOGGER.error("JVMService produces metrics failure.", t);
                                                }
                                            }
-                                       ), 0, Config.Jvm.METRICS_COLLECT_PERIOD, TimeUnit.SECONDS);
+                                       ), 0, 1, TimeUnit.SECONDS);
         sendMetricFuture = Executors.newSingleThreadScheduledExecutor(
             new DefaultNamedThreadFactory("JVMService-consume"))
                                     .scheduleAtFixedRate(new RunnableWithExceptionProtection(
@@ -105,18 +103,9 @@ public class JVMService implements BootService, Runnable {
             jvmBuilder.setThread(ThreadProvider.INSTANCE.getThreadMetrics());
             jvmBuilder.setClazz(ClassProvider.INSTANCE.getClassMetrics());
 
-            JVMMetric jvmMetric = jvmBuilder.build();
-            sender.offer(jvmMetric);
-
-            // refresh cpu usage percent
-            cpuUsagePercent = jvmMetric.getCpu().getUsagePercent();
+            sender.offer(jvmBuilder.build());
         } catch (Exception e) {
             LOGGER.error(e, "Collect JVM info fail.");
         }
     }
-
-    public double getCpuUsagePercent() {
-        return this.cpuUsagePercent;
-    }
-
 }

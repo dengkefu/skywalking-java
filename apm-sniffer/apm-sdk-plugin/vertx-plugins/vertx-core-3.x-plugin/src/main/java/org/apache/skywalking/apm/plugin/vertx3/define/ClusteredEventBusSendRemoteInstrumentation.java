@@ -73,9 +73,6 @@ public class ClusteredEventBusSendRemoteInstrumentation extends ClassInstanceMet
 
     @Override
     protected String[] witnessClasses() {
-        return new String[] {
-                "io.vertx.core.eventbus.impl.clustered.ClusteredMessage",
-                "io.vertx.core.http.impl.WebSocketFrameFactoryImpl"
-        };
+        return new String[] {"io.vertx.core.eventbus.impl.clustered.ClusteredMessage"};
     }
 }

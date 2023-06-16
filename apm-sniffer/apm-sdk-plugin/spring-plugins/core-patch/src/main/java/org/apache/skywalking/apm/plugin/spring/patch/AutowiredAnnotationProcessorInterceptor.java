@@ -20,6 +20,7 @@ package org.apache.skywalking.apm.plugin.spring.patch;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +72,7 @@ public class AutowiredAnnotationProcessorInterceptor implements InstanceMethodsA
                     Constructor<?>[] rawConstructor = beanClass.getDeclaredConstructors();
                     List<Constructor<?>> candidateRawConstructors = new ArrayList<Constructor<?>>();
                     for (Constructor<?> constructor : rawConstructor) {
-                        if (!constructor.isSynthetic()) {
+                        if (!Modifier.isPrivate(constructor.getModifiers())) {
                             candidateRawConstructors.add(constructor);
                         }
                     }

@@ -68,6 +68,7 @@ public class CodecUtils {
      * CarrierItem}, and so on.
      *
      * @param swContextCarrier the swContextCarrier to encode
+     * @return
      */
     static Buf encode(SWContextCarrier swContextCarrier) {
         if (StringUtil.isNotEmpty(swContextCarrier.getOperationName())
@@ -104,6 +105,7 @@ public class CodecUtils {
      * For convenient, we use {@link ByteBuffer} to wrap byte array.
      *
      * @param buf the byte array to decode
+     * @return
      */
     static SWContextCarrier decode(Buf buf) {
         try {

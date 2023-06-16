@@ -21,7 +21,6 @@ package org.apache.skywalking.apm.agent.core.conf.watcher;
 import org.apache.skywalking.apm.agent.core.boot.ServiceManager;
 import org.apache.skywalking.apm.agent.core.conf.dynamic.AgentConfigChangeWatcher;
 import org.apache.skywalking.apm.agent.core.conf.dynamic.watcher.SamplingRateWatcher;
-import org.apache.skywalking.apm.agent.core.context.util.FieldGetter;
 import org.apache.skywalking.apm.agent.core.sampling.SamplingService;
 import org.apache.skywalking.apm.agent.core.test.tools.AgentServiceRule;
 import org.junit.AfterClass;
@@ -29,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.powermock.reflect.Whitebox;
 
 public class SamplingRateWatcherTest {
 
@@ -48,8 +48,9 @@ public class SamplingRateWatcherTest {
     }
 
     @Test
-    public void testConfigModifyEvent() throws IllegalAccessException, NoSuchFieldException {
-        SamplingRateWatcher samplingRateWatcher = FieldGetter.getValue(samplingService, "samplingRateWatcher");
+    public void testConfigModifyEvent() {
+        SamplingRateWatcher samplingRateWatcher = Whitebox.getInternalState(
+            samplingService, "samplingRateWatcher");
         samplingRateWatcher.notify(new AgentConfigChangeWatcher.ConfigChangeEvent(
             "10",
             AgentConfigChangeWatcher.EventType.MODIFY
@@ -59,9 +60,9 @@ public class SamplingRateWatcherTest {
     }
 
     @Test
-    public void testConfigDeleteEvent() throws IllegalAccessException, NoSuchFieldException {
-        SamplingRateWatcher samplingRateWatcher =
-            FieldGetter.getValue(samplingService, "samplingRateWatcher");
+    public void testConfigDeleteEvent() {
+        SamplingRateWatcher samplingRateWatcher = Whitebox.getInternalState(
+            samplingService, "samplingRateWatcher");
         samplingRateWatcher.notify(new AgentConfigChangeWatcher.ConfigChangeEvent(
             null,
             AgentConfigChangeWatcher.EventType.DELETE

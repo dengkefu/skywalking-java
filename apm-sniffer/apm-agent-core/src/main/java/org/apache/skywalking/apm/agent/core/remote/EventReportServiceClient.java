@@ -41,7 +41,6 @@ import org.apache.skywalking.apm.network.event.v3.Source;
 import org.apache.skywalking.apm.network.event.v3.Type;
 
 import static org.apache.skywalking.apm.agent.core.conf.Config.Collector.GRPC_UPSTREAM_TIMEOUT;
-import static org.apache.skywalking.apm.agent.core.conf.Constants.EVENT_LAYER_NAME;
 import static org.apache.skywalking.apm.agent.core.remote.GRPCChannelStatus.CONNECTED;
 
 @DefaultImplementor
@@ -79,8 +78,7 @@ public class EventReportServiceClient implements BootService, GRPCChannelListene
                                               .stream()
                                               .sorted()
                                               .collect(Collectors.joining(" "))
-                             )
-                             .setLayer(EVENT_LAYER_NAME);
+                             );
     }
 
     @Override
@@ -114,8 +112,7 @@ public class EventReportServiceClient implements BootService, GRPCChannelListene
                                                            .setService(Config.Agent.SERVICE_NAME)
                                                            .setServiceInstance(Config.Agent.INSTANCE_NAME)
                                                            .build()
-                                                 )
-                                                .setLayer(EVENT_LAYER_NAME);
+                                                 );
 
         final StreamObserver<Event> collector = eventServiceStub.collect(new StreamObserver<Commands>() {
             @Override

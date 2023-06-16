@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.Optional;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.async.RingBufferLogEvent;
 import org.apache.skywalking.apm.agent.core.boot.ServiceManager;
 import org.apache.skywalking.apm.agent.core.conf.Config;
 import org.apache.skywalking.apm.agent.core.context.ContextManager;
@@ -38,7 +37,6 @@ import org.apache.skywalking.apm.network.logging.v3.LogDataBody;
 import org.apache.skywalking.apm.network.logging.v3.LogTags;
 import org.apache.skywalking.apm.network.logging.v3.TextLog;
 import org.apache.skywalking.apm.network.logging.v3.TraceContext;
-import org.apache.skywalking.apm.toolkit.logging.common.log.SkyWalkingContext;
 import org.apache.skywalking.apm.toolkit.logging.common.log.ToolkitConfig;
 
 public class GRPCLogAppenderInterceptor implements InstanceMethodsAroundInterceptor {
@@ -80,7 +78,7 @@ public class GRPCLogAppenderInterceptor implements InstanceMethodsAroundIntercep
      * @param event {@link LogEvent}
      * @return {@link LogData} with filtered trace context in order to reduce the cost on the network
      */
-    private LogData.Builder transform(final AbstractAppender appender, LogEvent event) {
+    private LogData transform(final AbstractAppender appender, LogEvent event) {
         LogTags.Builder logTags = LogTags.newBuilder()
                 .addData(KeyStringValuePair.newBuilder()
                         .setKey("level").setValue(event.getLevel().toString()).build())
@@ -110,28 +108,12 @@ public class GRPCLogAppenderInterceptor implements InstanceMethodsAroundIntercep
                 .setTags(logTags.build())
                 .setBody(LogDataBody.newBuilder().setType(LogDataBody.ContentCase.TEXT.name())
                         .setText(TextLog.newBuilder().setText(transformLogText(appender, event)).build()).build());
-
-        String primaryEndpointName = ContextManager.getPrimaryEndpointName();
-        if (primaryEndpointName != null) {
-            builder.setEndpoint(primaryEndpointName);
-        }
-
-        if (event instanceof RingBufferLogEvent) {
-            EnhancedInstance instance = (EnhancedInstance) event;
-            SkyWalkingContext context = (SkyWalkingContext) instance.getSkyWalkingDynamicField();
-            return builder.setTraceContext(TraceContext.newBuilder()
-                    .setTraceId(context.getTraceId())
-                    .setSpanId(context.getSpanId())
-                    .setTraceSegmentId(context.getTraceSegmentId())
-                    .build());
-        } else {
-            return -1 == ContextManager.getSpanId() ? builder
-                    : builder.setTraceContext(TraceContext.newBuilder()
-                    .setTraceId(ContextManager.getGlobalTraceId())
-                    .setSpanId(ContextManager.getSpanId())
-                    .setTraceSegmentId(ContextManager.getSegmentId())
-                    .build());
-        }
+        return -1 == ContextManager.getSpanId() ? builder.build()
+                : builder.setTraceContext(TraceContext.newBuilder()
+                .setTraceId(ContextManager.getGlobalTraceId())
+                .setSpanId(ContextManager.getSpanId())
+                .setTraceSegmentId(ContextManager.getSegmentId())
+                .build()).build();
     }
 
     private String transformLogText(final AbstractAppender appender, final LogEvent event) {

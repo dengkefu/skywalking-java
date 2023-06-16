@@ -248,7 +248,6 @@ public class ConfigurationImpl implements IConfiguration {
             service.setHealthcheck(dependency.getHealthcheck());
             service.setEnvironment(dependency.getEnvironment());
             service.setRemoveOnExit(dependency.isRemoveOnExit());
-            service.setCommand(dependency.getCommand());
             services.add(service);
         });
         return services;

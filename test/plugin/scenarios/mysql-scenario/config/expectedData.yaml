@@ -19,11 +19,11 @@ segmentItems:
   segments:
   - segmentId: not null
     spans:
-    - operationName: Mysql/JDBC/PreparedStatement/execute
+    - operationName: Mysql/JDBI/PreparedStatement/execute
       parentSpanId: 0
       spanId: 1
       tags:
-      - {key: db.type, value: Mysql}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: test}
       - key: db.statement
         value: "CREATE TABLE test_007(\nid VARCHAR(1) PRIMARY KEY, \nvalue VARCHAR(1)\
@@ -37,11 +37,11 @@ segmentItems:
       componentId: 33
       peer: mysql-server:3306
       skipAnalysis: 'false'
-    - operationName: Mysql/JDBC/PreparedStatement/execute
+    - operationName: Mysql/JDBI/PreparedStatement/execute
       parentSpanId: 0
       spanId: 2
       tags:
-      - {key: db.type, value: Mysql}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: test}
       - {key: db.statement, value: 'INSERT INTO test_007(id, value) VALUES(?,?)'}
       logs: []
@@ -53,11 +53,11 @@ segmentItems:
       componentId: 33
       peer: mysql-server:3306
       skipAnalysis: 'false'
-    - operationName: Mysql/JDBC/Statement/execute
+    - operationName: Mysql/JDBI/Statement/execute
       parentSpanId: 0
       spanId: 3
       tags:
-      - {key: db.type, value: Mysql}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: test}
       - {key: db.statement, value: DROP table test_007}
       logs: []
@@ -69,11 +69,11 @@ segmentItems:
       componentId: 33
       peer: mysql-server:3306
       skipAnalysis: 'false'
-    - operationName: Mysql/JDBC/Statement/execute
+    - operationName: Mysql/JDBI/Statement/execute
       parentSpanId: 0
       spanId: 4
       tags:
-        - {key: db.type, value: Mysql}
+        - {key: db.type, value: sql}
         - {key: db.instance, value: test}
         - {key: db.statement, value: "create procedure testProcedure(IN id varchar(10)) \n begin \n select id; \n end"}
       logs: []
@@ -84,8 +84,8 @@ segmentItems:
       spanType: Exit
       componentId: 33
       peer: mysql-server:3306
-      skipAnalysis: 'false'
-    - operationName: Mysql/JDBC/Statement/executeQuery
+      skipAnalysis: 'false'  
+    - operationName: Mysql/JDBI/Statement/executeQuery
       parentSpanId: 0
       spanId: 5
       spanLayer: Database
@@ -97,14 +97,14 @@ segmentItems:
       peer: mysql-server:3306
       skipAnalysis: false
       tags:
-        - {key: db.type, value: Mysql}
+        - {key: db.type, value: sql}
         - {key: db.instance, value: test}
         - {key: db.statement, value: SHOW CREATE PROCEDURE `test`.`testProcedure`}
-    - operationName: Mysql/JDBC/CallableStatement/execute
+    - operationName: Mysql/JDBI/CallableStatement/execute
       parentSpanId: 0
       spanId: 6
       tags:
-        - {key: db.type, value: Mysql}
+        - {key: db.type, value: sql}
         - {key: db.instance, value: test}
         - {key: db.statement, value: "call testProcedure( ? )"}
       logs: []
@@ -116,11 +116,11 @@ segmentItems:
       componentId: 33
       peer: mysql-server:3306
       skipAnalysis: 'false'
-    - operationName: Mysql/JDBC/Statement/execute
+    - operationName: Mysql/JDBI/Statement/execute
       parentSpanId: 0
       spanId: 7
       tags:
-        - {key: db.type, value: Mysql}
+        - {key: db.type, value: sql}
         - {key: db.instance, value: test}
         - {key: db.statement, value: "drop procedure testProcedure"}
       logs: []
@@ -131,12 +131,12 @@ segmentItems:
       spanType: Exit
       componentId: 33
       peer: mysql-server:3306
-      skipAnalysis: 'false'
-    - operationName: Mysql/JDBC/Connection/close
+      skipAnalysis: 'false'  
+    - operationName: Mysql/JDBI/Connection/close
       parentSpanId: 0
       spanId: 8
       tags:
-      - {key: db.type, value: Mysql}
+      - {key: db.type, value: sql}
       - {key: db.instance, value: test}
       - {key: db.statement, value: ''}
       logs: []
@@ -160,6 +160,5 @@ segmentItems:
       tags:
       - {key: url, value: 'http://localhost:8080/mysql-scenario/case/mysql-scenario'}
       - {key: http.method, value: GET}
-      - {key: http.status_code, value: '200'}
       logs: []
       skipAnalysis: 'false'

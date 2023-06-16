@@ -20,7 +20,8 @@ package org.apache.skywalking.apm.plugin.jdbc.kylin;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.when;
+
 import java.lang.reflect.Method;
 import org.apache.skywalking.apm.agent.core.context.trace.AbstractTracingSpan;
 import org.apache.skywalking.apm.agent.core.context.trace.SpanLayer;
@@ -43,10 +44,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
-@RunWith(TracingSegmentRunner.class)
+@RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(TracingSegmentRunner.class)
 public class PreparedStatementExecuteMethodsInterceptorTest {
 
     private static final String SQL = "Select * from test where id = ?";
@@ -56,8 +58,6 @@ public class PreparedStatementExecuteMethodsInterceptorTest {
 
     @Rule
     public AgentServiceRule serviceRule = new AgentServiceRule();
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
 
     private PreparedStatementExecuteMethodsInterceptor serviceMethodInterceptor;
 
@@ -113,8 +113,8 @@ public class PreparedStatementExecuteMethodsInterceptorTest {
         assertThat(SegmentHelper.getSpans(segment).size(), is(1));
         AbstractTracingSpan span = SegmentHelper.getSpans(segment).get(0);
         SpanAssert.assertLayer(span, SpanLayer.DB);
-        assertThat(span.getOperationName(), is("kylin/JDBC/PreparedStatement/executeQuery"));
-        SpanAssert.assertTag(span, 0, "kylin");
+        assertThat(span.getOperationName(), is("kylin/JDBI/PreparedStatement/"));
+        SpanAssert.assertTag(span, 0, "sql");
         SpanAssert.assertTag(span, 1, "test");
         SpanAssert.assertTag(span, 2, SQL);
         SpanAssert.assertTag(span, 3, "[abcd,efgh]");
@@ -143,8 +143,8 @@ public class PreparedStatementExecuteMethodsInterceptorTest {
         assertThat(SegmentHelper.getSpans(segment).size(), is(1));
         AbstractTracingSpan span = SegmentHelper.getSpans(segment).get(0);
         SpanAssert.assertLayer(span, SpanLayer.DB);
-        assertThat(span.getOperationName(), is("kylin/JDBC/PreparedStatement/executeQuery"));
-        SpanAssert.assertTag(span, 0, "kylin");
+        assertThat(span.getOperationName(), is("kylin/JDBI/PreparedStatement/"));
+        SpanAssert.assertTag(span, 0, "sql");
         SpanAssert.assertTag(span, 1, "test");
         SpanAssert.assertTag(span, 2, "Select * f...");
         SpanAssert.assertTag(span, 3, "[abcd,efgh]");

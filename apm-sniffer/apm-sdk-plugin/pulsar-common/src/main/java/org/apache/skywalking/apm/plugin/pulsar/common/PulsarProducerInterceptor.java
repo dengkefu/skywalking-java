@@ -20,7 +20,6 @@ package org.apache.skywalking.apm.plugin.pulsar.common;
 
 import org.apache.pulsar.client.api.Message;
 import org.apache.pulsar.client.impl.MessageImpl;
-import org.apache.pulsar.client.impl.ProducerImpl;
 import org.apache.skywalking.apm.agent.core.context.CarrierItem;
 import org.apache.skywalking.apm.agent.core.context.ContextCarrier;
 import org.apache.skywalking.apm.agent.core.context.ContextManager;
@@ -41,7 +40,7 @@ import java.lang.reflect.Method;
  * Here is the intercept process steps:
  *
  * <pre>
- *  1. Record the service url, topic name through this(ProducerImpl)
+ *  1. Get the {@link ProducerEnhanceRequiredInfo} and record the service url, topic name
  *  2. Create the exit span when the producer invoke <code>sendAsync</code> method
  *  3. Inject the context to {@link Message#getProperties()}
  *  4. Create {@link SendCallbackEnhanceRequiredInfo} with <code>ContextManager.capture()</code> and set the
@@ -58,18 +57,19 @@ public class PulsarProducerInterceptor implements InstanceMethodsAroundIntercept
     public void beforeMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes,
         MethodInterceptResult result) throws Throwable {
         if (allArguments[0] != null) {
+            ProducerEnhanceRequiredInfo requiredInfo = (ProducerEnhanceRequiredInfo) objInst.getSkyWalkingDynamicField();
             ContextCarrier contextCarrier = new ContextCarrier();
-            ProducerImpl producer = (ProducerImpl) objInst;
-            final String serviceUrl = producer.getClient().getLookup().getServiceUrl();
-            AbstractSpan activeSpan = ContextManager.createExitSpan(OPERATE_NAME_PREFIX + producer.getTopic() + PRODUCER_OPERATE_NAME_SUFFIX, contextCarrier, serviceUrl);
-            Tags.MQ_BROKER.set(activeSpan, serviceUrl);
-            Tags.MQ_TOPIC.set(activeSpan, producer.getTopic());
+            String topicName = requiredInfo.getTopic();
+            AbstractSpan activeSpan = ContextManager.createExitSpan(OPERATE_NAME_PREFIX + topicName + PRODUCER_OPERATE_NAME_SUFFIX, contextCarrier, requiredInfo
+                .getServiceUrl());
+            Tags.MQ_BROKER.set(activeSpan, requiredInfo.getServiceUrl());
+            Tags.MQ_TOPIC.set(activeSpan, topicName);
             contextCarrier.extensionInjector().injectSendingTimestamp();
             SpanLayer.asMQ(activeSpan);
             activeSpan.setComponent(ComponentsDefine.PULSAR_PRODUCER);
             CarrierItem next = contextCarrier.items();
             MessageImpl msg = (MessageImpl) allArguments[0];
-            MessagePropertiesInjector propertiesInjector = (MessagePropertiesInjector) objInst.getSkyWalkingDynamicField();
+            final MessagePropertiesInjector propertiesInjector = requiredInfo.getPropertiesInjector();
             if (propertiesInjector != null) {
                 while (next.hasNext()) {
                     next = next.next();
@@ -83,7 +83,7 @@ public class PulsarProducerInterceptor implements InstanceMethodsAroundIntercept
                     ContextSnapshot snapshot = ContextManager.capture();
                     if (null != snapshot) {
                         SendCallbackEnhanceRequiredInfo callbackRequiredInfo = new SendCallbackEnhanceRequiredInfo();
-                        callbackRequiredInfo.setTopic(producer.getTopic());
+                        callbackRequiredInfo.setTopic(topicName);
                         callbackRequiredInfo.setContextSnapshot(snapshot);
                         callbackInstance.setSkyWalkingDynamicField(callbackRequiredInfo);
                     }

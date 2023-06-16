@@ -26,13 +26,45 @@ import io.grpc.ClientInterceptors;
 import io.grpc.ForwardingClientCall;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
-import org.apache.skywalking.apm.agent.core.conf.Config;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import org.apache.skywalking.apm.agent.core.logging.api.ILog;
+import org.apache.skywalking.apm.agent.core.logging.api.LogManager;
 
 /**
  * Add agent version(Described in MANIFEST.MF) to the connection establish stage.
  */
 public class AgentIDDecorator implements ChannelDecorator {
+    private static final ILog LOGGER = LogManager.getLogger(AgentIDDecorator.class);
     private static final Metadata.Key<String> AGENT_VERSION_HEAD_HEADER_NAME = Metadata.Key.of("Agent-Version", Metadata.ASCII_STRING_MARSHALLER);
+    private String version = "UNKNOWN";
+
+    public AgentIDDecorator() {
+        try {
+            Enumeration<URL> resources = AgentIDDecorator.class.getClassLoader().getResources(JarFile.MANIFEST_NAME);
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                try (InputStream is = url.openStream()) {
+                    if (is != null) {
+                        Manifest manifest = new Manifest(is);
+                        Attributes mainAttribs = manifest.getMainAttributes();
+                        String projectName = mainAttribs.getValue("Implementation-Vendor-Id");
+                        if (projectName != null) {
+                            if ("org.apache.skywalking".equals(projectName)) {
+                                version = mainAttribs.getValue("Implementation-Version");
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.warn("Can't read version from MANIFEST.MF in the agent jar");
+        }
+    }
 
     @Override
     public Channel build(Channel channel) {
@@ -43,7 +75,7 @@ public class AgentIDDecorator implements ChannelDecorator {
                 return new ForwardingClientCall.SimpleForwardingClientCall<REQ, RESP>(channel.newCall(method, options)) {
                     @Override
                     public void start(Listener<RESP> responseListener, Metadata headers) {
-                        headers.put(AGENT_VERSION_HEAD_HEADER_NAME, Config.Agent.VERSION);
+                        headers.put(AGENT_VERSION_HEAD_HEADER_NAME, version);
 
                         super.start(responseListener, headers);
                     }

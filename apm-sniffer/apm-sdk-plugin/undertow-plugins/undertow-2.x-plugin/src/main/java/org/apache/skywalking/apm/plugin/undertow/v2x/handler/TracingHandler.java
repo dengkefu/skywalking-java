@@ -59,7 +59,7 @@ public class TracingHandler implements HttpHandler {
         } else {
             operationName = template;
         }
-        final AbstractSpan span = ContextManager.createEntrySpan(exchange.getRequestMethod() + ":" + operationName, carrier);
+        final AbstractSpan span = ContextManager.createEntrySpan(operationName, carrier);
         Tags.URL.set(span, exchange.getRequestURL());
         Tags.HTTP.METHOD.set(span, exchange.getRequestMethod().toString());
         span.setComponent(ComponentsDefine.UNDERTOW);
@@ -70,9 +70,9 @@ public class TracingHandler implements HttpHandler {
                 @Override
                 public void exchangeEvent(HttpServerExchange httpServerExchange, NextListener nextListener) {
                     nextListener.proceed();
-                    Tags.HTTP_RESPONSE_STATUS_CODE.set(span, httpServerExchange.getStatusCode());
                     if (httpServerExchange.getStatusCode() >= 400) {
                         span.errorOccurred();
+                        Tags.HTTP_RESPONSE_STATUS_CODE.set(span, httpServerExchange.getStatusCode());
                     }
                     span.asyncFinish();
                 }

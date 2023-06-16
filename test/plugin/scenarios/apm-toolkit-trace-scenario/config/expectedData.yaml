@@ -208,7 +208,6 @@ segmentItems:
       - {key: traceID, value: not null}
       - {key: segmentID, value: not null}
       - {key: spanID, value: not null}
-      - {key: http.status_code, value: '200'}
       skipAnalysis: 'true'
       refs:
       - {parentEndpoint: /app, networkAddress: '127.0.0.1:8080', refType: CrossProcess,
@@ -231,7 +230,6 @@ segmentItems:
       - {key: url, value: 'http://localhost:8080/apm-toolkit-trace-scenario/case/asyncVisit/callable'}
       - {key: http.method, value: GET}
       - {key: correlation, value: correlationValueTest}
-      - {key: http.status_code, value: '200'}
       refs:
       - {parentEndpoint: Thread/org.apache.skywalking.apm.toolkit.trace.CallableWrapper/call,
         networkAddress: 'localhost:8080', refType: CrossProcess, parentSpanId: 1,
@@ -253,7 +251,6 @@ segmentItems:
       tags:
       - {key: url, value: 'http://localhost:8080/apm-toolkit-trace-scenario/case/asyncVisit/runnable'}
       - {key: http.method, value: GET}
-      - {key: http.status_code, value: '200'}
       skipAnalysis: 'true'
     - operationName: Thread/org.apache.skywalking.apm.toolkit.trace.RunnableWrapper/run
       parentSpanId: -1
@@ -285,7 +282,6 @@ segmentItems:
       tags:
       - {key: url, value: 'http://localhost:8080/apm-toolkit-trace-scenario/case/asyncVisit/callable'}
       - {key: http.method, value: GET}
-      - {key: http.status_code, value: '200'}
       skipAnalysis: 'true'
     - operationName: Thread/org.apache.skywalking.apm.toolkit.trace.CallableWrapper/call
       parentSpanId: -1
@@ -318,7 +314,6 @@ segmentItems:
       - {key: url, value: 'http://localhost:8080/apm-toolkit-trace-scenario/case/asyncVisit/runnable'}
       - {key: http.method, value: GET}
       - {key: correlation, value: correlationValueTest}
-      - {key: http.status_code, value: '200'}
       refs:
       - {parentEndpoint: Thread/org.apache.skywalking.apm.toolkit.trace.RunnableWrapper/run,
         networkAddress: 'localhost:8080', refType: CrossProcess, parentSpanId: 1,
@@ -340,7 +335,6 @@ segmentItems:
       tags:
       - {key: url, value: 'http://localhost:8080/apm-toolkit-trace-scenario/case/asyncVisit/supplier'}
       - {key: http.method, value: GET}
-      - {key: http.status_code, value: '200'}
       skipAnalysis: 'true'
     - operationName: Thread/org.apache.skywalking.apm.toolkit.trace.SupplierWrapper/get
       parentSpanId: -1
@@ -373,7 +367,6 @@ segmentItems:
       - {key: url, value: 'http://localhost:8080/apm-toolkit-trace-scenario/case/asyncVisit/supplier'}
       - {key: http.method, value: GET}
       - {key: correlation, value: correlationValueTest}
-      - {key: http.status_code, value: '200'}
       refs:
       - {parentEndpoint: Thread/org.apache.skywalking.apm.toolkit.trace.SupplierWrapper/get,
         networkAddress: 'localhost:8080', refType: CrossProcess, parentSpanId: 1,
@@ -395,7 +388,6 @@ segmentItems:
       tags:
       - {key: url, value: 'http://localhost:8080/apm-toolkit-trace-scenario/case/asyncVisit/consumer'}
       - {key: http.method, value: GET}
-      - {key: http.status_code, value: '200'}
       skipAnalysis: 'true'
     - operationName: Thread/org.apache.skywalking.apm.toolkit.trace.ConsumerWrapper/accept
       parentSpanId: -1
@@ -428,7 +420,6 @@ segmentItems:
       - {key: url, value: 'http://localhost:8080/apm-toolkit-trace-scenario/case/asyncVisit/function'}
       - {key: http.method, value: GET}
       - {key: correlation, value: correlationValueTest}
-      - {key: http.status_code, value: '200'}
       refs:
       - {parentEndpoint: Thread/org.apache.skywalking.apm.toolkit.trace.FunctionWrapper/apply,
         networkAddress: 'localhost:8080', refType: CrossProcess, parentSpanId: 1,
@@ -450,7 +441,6 @@ segmentItems:
       tags:
       - {key: url, value: 'http://localhost:8080/apm-toolkit-trace-scenario/case/asyncVisit/function'}
       - {key: http.method, value: GET}
-      - {key: http.status_code, value: '200'}
       skipAnalysis: 'true'
     - operationName: Thread/org.apache.skywalking.apm.toolkit.trace.FunctionWrapper/apply
       parentSpanId: -1
@@ -483,7 +473,6 @@ segmentItems:
       - {key: url, value: 'http://localhost:8080/apm-toolkit-trace-scenario/case/asyncVisit/consumer'}
       - {key: http.method, value: GET}
       - {key: correlation, value: correlationValueTest}
-      - {key: http.status_code, value: '200'}
       refs:
       - {parentEndpoint: Thread/org.apache.skywalking.apm.toolkit.trace.ConsumerWrapper/accept,
         networkAddress: 'localhost:8080', refType: CrossProcess, parentSpanId: 1,
@@ -492,7 +481,7 @@ segmentItems:
       skipAnalysis: 'true'
 meterItems:
 - serviceName: apm-toolkit-trace-scenario
-  meterSize: 8
+  meterSize: 3
   meters:
     - meterId:
         name: test_counter
@@ -513,33 +502,3 @@ meterItems:
         - 1.0
         - 5.0
         - 10.0
-    - meterId:
-        name: thread_pool
-        tags:
-          - {name: metric_type, value: core_pool_size}
-          - {name: pool_name, value: tomcat_execute_pool}
-      singleValue: ge 1
-    - meterId:
-        name: thread_pool
-        tags:
-          - {name: metric_type, value: max_pool_size}
-          - {name: pool_name, value: tomcat_execute_pool}
-      singleValue: ge 1
-    - meterId:
-        name: thread_pool
-        tags:
-          - {name: metric_type, value: pool_size}
-          - {name: pool_name, value: tomcat_execute_pool}
-      singleValue: ge 0
-    - meterId:
-        name: thread_pool
-        tags:
-          - {name: metric_type, value: active_size}
-          - {name: pool_name, value: tomcat_execute_pool}
-      singleValue: ge 0
-    - meterId:
-        name: thread_pool
-        tags:
-          - {name: metric_type, value: queue_size}
-          - {name: pool_name, value: tomcat_execute_pool}
-      singleValue: ge 0

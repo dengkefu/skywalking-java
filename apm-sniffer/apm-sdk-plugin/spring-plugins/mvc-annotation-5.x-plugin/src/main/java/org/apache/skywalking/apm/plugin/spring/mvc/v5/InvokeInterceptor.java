@@ -71,11 +71,9 @@ public class InvokeInterceptor implements InstanceMethodsAroundInterceptorV2 {
                 return;
             }
             HttpStatus httpStatus = exchange.getResponse().getStatusCode();
-            if (httpStatus != null) {
+            if (httpStatus != null && httpStatus.isError()) {
+                span.errorOccurred();
                 Tags.HTTP_RESPONSE_STATUS_CODE.set(span, httpStatus.value());
-                if (httpStatus.isError()) {
-                    span.errorOccurred();
-                }
             }
             span.asyncFinish();
         });

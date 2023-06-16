@@ -22,26 +22,18 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * Init a class's static fields by a {@link Properties}, including static fields and static inner classes.
  * <p>
  */
 public class ConfigInitializer {
-
     public static void initialize(Properties properties, Class<?> rootConfigType) throws IllegalAccessException {
         initNextLevel(properties, rootConfigType, new ConfigDesc());
     }
@@ -52,50 +44,43 @@ public class ConfigInitializer {
             if (Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers())) {
                 String configKey = (parentDesc + "." + field.getName()).toLowerCase();
                 Class<?> type = field.getType();
-                if (Map.class.isAssignableFrom(type)) {
+
+                if (type.equals(Map.class)) {
                     /*
-                     * Map config format is, config_key[map_key]=map_value, such as plugin.opgroup.resttemplate.rule[abc]=/url/path
-                     * "config_key[]=" will generate an empty Map , user could use this mechanism to set an empty Map
+                     * Map config format is, config_key[map_key]=map_value
+                     * Such as plugin.opgroup.resttemplate.rule[abc]=/url/path
                      */
+                    // Deduct two generic types of the map
                     ParameterizedType genericType = (ParameterizedType) field.getGenericType();
                     Type[] argumentTypes = genericType.getActualTypeArguments();
-                    Type keyType = argumentTypes[0];
-                    Type valueType = argumentTypes[1];
-                    // A chance to set an empty map
-                    if (properties.containsKey(configKey + "[]")) {
-                        Map currentValue = (Map) field.get(null);
-                        if (currentValue != null && !currentValue.isEmpty()) {
-                            field.set(null, initEmptyMap(type));
-                        }
-                    } else {
-                        // Set the map from config key and properties
-                        Map map = readMapType(type, configKey, properties, keyType, valueType);
-                        if (map.size() != 0) {
-                            field.set(null, map);
+
+                    Type keyType = null;
+                    Type valueType = null;
+                    if (argumentTypes != null && argumentTypes.length == 2) {
+                        // Get key type and value type of the map
+                        keyType = argumentTypes[0];
+                        valueType = argumentTypes[1];
+                    }
+                    Map map = (Map) field.get(null);
+                    // Set the map from config key and properties
+                    setForMapType(configKey, map, properties, keyType, valueType);
+                } else {
+                    /*
+                     * Others typical field type
+                     */
+                    String value = properties.getProperty(configKey);
+                    // Convert the value into real type
+                    final Length lengthDefine = field.getAnnotation(Length.class);
+                    if (lengthDefine != null) {
+                        if (value != null && value.length() > lengthDefine.value()) {
+                            value = value.substring(0, lengthDefine.value());
                         }
                     }
-                } else if (properties.containsKey(configKey)) {
-                    //In order to guarantee the default value could be reset as empty , we parse the value even if it's blank
-                    String propertyValue = properties.getProperty(configKey, "");
-                    if (Collection.class.isAssignableFrom(type)) {
-                        ParameterizedType genericType = (ParameterizedType) field.getGenericType();
-                        Type argumentType = genericType.getActualTypeArguments()[0];
-                        Collection collection = convertToCollection(argumentType, type, propertyValue);
-                        field.set(null, collection);
-                    } else {
-                        // Convert the value into real type
-                        final Length lengthDefine = field.getAnnotation(Length.class);
-                        if (lengthDefine != null && propertyValue.length() > lengthDefine.value()) {
-                            StringUtil.cut(propertyValue, lengthDefine.value());
-                            System.err.printf("The config value will be truncated , because the length max than %d : %s -> %s%n", lengthDefine.value(), configKey, propertyValue);
-                        }
-                        Object convertedValue = convertToTypicalType(type, propertyValue);
-                        if (convertedValue != null) {
-                            field.set(null, convertedValue);
-                        }
+                    Object convertedValue = convertToTypicalType(type, value);
+                    if (convertedValue != null) {
+                        field.set(null, convertedValue);
                     }
                 }
-
             }
         }
         for (Class<?> innerConfiguration : recentConfigType.getClasses()) {
@@ -103,28 +88,6 @@ public class ConfigInitializer {
             initNextLevel(properties, innerConfiguration, parentDesc);
             parentDesc.removeLastDesc();
         }
-    }
-
-    private static Collection<Object> convertToCollection(Type argumentType, Class<?> type, String propertyValue) {
-        Collection<Object> collection;
-        if (type.equals(Set.class) || type.equals(HashSet.class)) {
-            collection = new HashSet<>();
-        } else if (type.equals(TreeSet.class)) {
-            collection = new TreeSet<>();
-        } else if (type.equals(List.class) || type.equals(LinkedList.class)) {
-            collection = new LinkedList<>();
-        } else if (type.equals(ArrayList.class)) {
-            collection = new ArrayList<>();
-        } else {
-            throw new UnsupportedOperationException("Config parameter type support Set,HashSet,TreeSet,List,LinkedList,ArrayList");
-        }
-        if (StringUtil.isBlank(propertyValue)) {
-            return collection;
-        }
-        Arrays.stream(propertyValue.split(","))
-                .map(v -> convertToTypicalType(argumentType, v))
-                .forEach(collection::add);
-        return collection;
     }
 
     /**
@@ -135,9 +98,10 @@ public class ConfigInitializer {
      * @return converted value or null
      */
     private static Object convertToTypicalType(Type type, String value) {
-        if (StringUtil.isBlank(value)) {
+        if (value == null || type == null) {
             return null;
         }
+
         Object result = null;
         if (String.class.equals(type)) {
             result = value;
@@ -151,6 +115,8 @@ public class ConfigInitializer {
             result = Float.valueOf(value);
         } else if (double.class.equals(type) || Double.class.equals(type)) {
             result = Double.valueOf(value);
+        } else if (List.class.equals(type)) {
+            result = convert2List(value);
         } else if (type instanceof Class) {
             Class<?> clazz = (Class<?>) type;
             if (clazz.isEnum()) {
@@ -163,23 +129,22 @@ public class ConfigInitializer {
     /**
      * Set map items.
      *
-     * @param type       the filed type
      * @param configKey  config key must not be null
+     * @param map        map to set must not be null
      * @param properties properties must not be null
      * @param keyType    key type of the map
      * @param valueType  value type of the map
      */
-    private static Map readMapType(Class<?> type,
-                                   String configKey,
-                                   Properties properties,
-                                   final Type keyType,
-                                   final Type valueType) {
+    private static void setForMapType(String configKey, Map<Object, Object> map, Properties properties,
+                                      final Type keyType, final Type valueType) {
 
         Objects.requireNonNull(configKey);
+        Objects.requireNonNull(map);
         Objects.requireNonNull(properties);
-        Map<Object, Object> map = initEmptyMap(type);
+
         String prefix = configKey + "[";
         String suffix = "]";
+
         properties.forEach((propertyKey, propertyValue) -> {
             String propertyStringKey = propertyKey.toString();
             if (propertyStringKey.startsWith(prefix) && propertyStringKey.endsWith(suffix)) {
@@ -198,21 +163,28 @@ public class ConfigInitializer {
                 if (valueObj == null) {
                     valueObj = propertyValue;
                 }
+
                 map.put(keyObj, valueObj);
             }
         });
-        return map;
     }
 
-    private static Map<Object, Object> initEmptyMap(Class<?> type) {
-        if (type.equals(Map.class) || type.equals(HashMap.class)) {
-            return new HashMap<>();
-        } else if (type.equals(TreeMap.class)) {
-            return new TreeMap<>();
-        } else {
-            throw new UnsupportedOperationException("Config parameter type support Map,HashMap,TreeMap");
+    private static List<String> convert2List(String value) {
+        if (StringUtil.isEmpty(value)) {
+            return Collections.emptyList();
         }
+        List<String> result = new LinkedList<>();
+
+        String[] segments = value.split(",");
+        for (String segment : segments) {
+            String trimmedSegment = segment.trim();
+            if (StringUtil.isNotEmpty(trimmedSegment)) {
+                result.add(trimmedSegment);
+            }
+        }
+        return result;
     }
+
 }
 
 class ConfigDesc {

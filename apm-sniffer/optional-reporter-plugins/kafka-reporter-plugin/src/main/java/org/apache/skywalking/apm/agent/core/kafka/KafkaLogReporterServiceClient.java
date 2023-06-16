@@ -23,7 +23,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.skywalking.apm.agent.core.boot.OverrideImplementor;
 import org.apache.skywalking.apm.agent.core.boot.ServiceManager;
-import org.apache.skywalking.apm.agent.core.conf.Config;
 import org.apache.skywalking.apm.agent.core.remote.LogReportServiceClient;
 import org.apache.skywalking.apm.agent.core.util.CollectionUtil;
 import org.apache.skywalking.apm.network.logging.v3.LogData;
@@ -42,21 +41,18 @@ public class KafkaLogReporterServiceClient extends LogReportServiceClient implem
     }
 
     @Override
-    public void produce(final LogData.Builder logData) {
+    public void produce(final LogData logData) {
         super.produce(logData);
     }
 
     @Override
-    public void consume(final List<LogData.Builder> dataList) {
+    public void consume(final List<LogData> dataList) {
         if (producer == null || CollectionUtil.isEmpty(dataList)) {
             return;
         }
 
-        for (LogData.Builder data : dataList) {
-            // Kafka Log reporter sends one log per time.
-            // Every time, service name should be set to keep data integrity.
-            data.setService(Config.Agent.SERVICE_NAME);
-            producer.send(new ProducerRecord<>(topic, data.getService(), Bytes.wrap(data.build().toByteArray())));
+        for (LogData data : dataList) {
+            producer.send(new ProducerRecord<>(topic, data.getService(), Bytes.wrap(data.toByteArray())));
         }
     }
 
